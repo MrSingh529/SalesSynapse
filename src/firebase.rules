@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && resource.data.managerEmail == request.auth.token.email;
+    }
+    
+    // Visits rules
+    match /visits/{visitId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (
+        // Users can read their own visits
+        resource.data.salesPersonId == request.auth.uid ||
+        // Managers can read visits of their team
+        request.auth.token.role == 'manager'
+      );
+      allow update, delete: if request.auth != null && 
+        resource.data.salesPersonId == request.auth.uid;
+    }
+    
+    // Notifications rules
+    match /notifications/{notificationId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && 
+        resource.data.managerEmail == request.auth.token.email;
+      allow update: if request.auth != null && 
+        resource.data.managerEmail == request.auth.token.email;
+    }
+  }
+}
