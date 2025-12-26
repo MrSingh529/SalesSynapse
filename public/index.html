@@ -5,18 +5,85 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1976d2" />
-    <meta
-      name="description"
-      content="SalesSynapse Pro - AI-Powered Sales Intelligence Platform"
-    />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="SalesSynapse Pro">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SalesSynapse">
+    <meta name="description" content="AI-Powered Sales Intelligence Platform for tracking sales visits and generating insights">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#1976d2">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SalesSynapse Pro - AI Sales Intelligence">
+    <meta property="og:description" content="AI-Powered Sales Intelligence Platform">
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="SalesSynapse Pro - AI Sales Intelligence">
+    <meta property="twitter:description" content="AI-Powered Sales Intelligence Platform">
+    <meta property="twitter:image" content="%PUBLIC_URL%/logo512.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" crossorigin="use-credentials">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/logo152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/logo180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="%PUBLIC_URL%/logo167.png">
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="%PUBLIC_URL%/logo144.png">
+    
     <title>SalesSynapse Pro - AI Sales Intelligence</title>
+    
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Splash Screen (iOS) -->
+    <link href="%PUBLIC_URL%/splashscreens/iphone5_splash.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/iphone6_splash.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/iphoneplus_splash.png" media="(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/iphonex_splash.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/iphonexr_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/iphonexsmax_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/ipad_splash.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/ipadpro1_splash.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/ipadpro3_splash.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    <link href="%PUBLIC_URL%/splashscreens/ipadpro2_splash.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+    
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js').then(
+            function(registration) {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            },
+            function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            }
+          );
+        });
+      }
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: Inter, sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>SalesSynapse Pro requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+        <p>For the best experience, we recommend using the latest version of Chrome, Firefox, Safari, or Edge.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
   </body>
 </html>
