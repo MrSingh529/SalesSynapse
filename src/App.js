@@ -68,7 +68,7 @@ const theme = createTheme({
       main: iOSColors.systemTeal,
     },
     success: {
-      main: iOSStyles.colors.systemGreen,
+      main: iOSColors.systemGreen,
     },
     background: {
       default: iOSColors.systemGray6,
