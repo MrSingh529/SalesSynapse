@@ -1,0 +1,451 @@
+/* iOS-Style Animations and Transitions */
+
+/* Smooth iOS scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overscroll-behavior-y: contain;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Spring Animation Keyframes */
+@keyframes iosSpring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes iosFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes iosSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes iosSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes iosScaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes iosPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes iosShimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* iOS Card Animations */
+.ios-card-enter {
+  animation: iosSpring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ios-fade-in {
+  animation: iosFadeIn 0.3s ease-out;
+}
+
+.ios-slide-up {
+  animation: iosSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ios-slide-down {
+  animation: iosSlideDown 0.3s ease-out;
+}
+
+.ios-scale-in {
+  animation: iosScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* iOS Tap Feedback */
+.ios-tap-feedback {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ios-tap-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.8;
+}
+
+.ios-tap-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ios-tap-feedback:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* iOS Button Styles */
+.ios-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ios-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.ios-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* iOS Card with Blur Effect */
+.ios-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ios-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* iOS Glass Effect */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* iOS Safe Area Padding */
+.ios-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.ios-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.ios-safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.ios-safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* iOS List Item Animation */
+.ios-list-item {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ios-list-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+  transform: translateX(4px);
+}
+
+.ios-list-item:active {
+  background: rgba(0, 0, 0, 0.04);
+  transform: scale(0.99);
+}
+
+/* iOS Swipe Action */
+.ios-swipe-action {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* iOS Modal Slide Up */
+.ios-modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: iosFadeIn 0.3s ease-out;
+}
+
+.ios-modal-content {
+  border-radius: 16px 16px 0 0;
+  animation: iosSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* iOS Input Focus */
+.ios-input {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ios-input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+  transform: scale(1.01);
+}
+
+/* iOS Progress Bar */
+.ios-progress {
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.ios-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #007AFF, #5AC8FA);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* iOS Loading Spinner */
+@keyframes iosSpinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.ios-spinner {
+  animation: iosSpinner 0.8s linear infinite;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #007AFF;
+  border-radius: 50%;
+}
+
+/* iOS Pull to Refresh */
+.ios-pull-refresh {
+  transform: translateY(-50px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ios-pull-refresh.active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* iOS Badge */
+.ios-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #FF3B30;
+  color: white;
+  box-shadow: 0 2px 4px rgba(255, 59, 48, 0.3);
+}
+
+/* iOS Divider */
+.ios-divider {
+  height: 0.5px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 12px 0;
+}
+
+/* iOS Section Header */
+.ios-section-header {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* iOS Shadow Styles */
+.ios-shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ios-shadow-md {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ios-shadow-lg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.ios-shadow-xl {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+/* iOS Page Transition */
+.page-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* iOS Bounce Effect */
+@keyframes iosBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.ios-bounce {
+  animation: iosBounce 0.6s ease-in-out;
+}
+
+/* iOS Skeleton Loading */
+.ios-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 25%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: iosShimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* iOS Notification Badge */
+.ios-notification {
+  position: relative;
+}
+
+.ios-notification::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF3B30;
+  border: 2px solid white;
+  animation: iosPulse 2s infinite;
+}
+
+/* Responsive iOS styles */
+@media (max-width: 768px) {
+  .ios-card {
+    border-radius: 12px;
+  }
+  
+  .ios-modal-content {
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ios-card {
+    background: rgba(28, 28, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .ios-glass {
+    background: rgba(28, 28, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .ios-divider {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .ios-section-header {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

@@ -1,10 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/Common/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
+import PWAInstallPrompt from './components/Common/PWAInstallPrompt';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NewVisit from './pages/NewVisit';
@@ -12,161 +13,200 @@ import VisitReports from './pages/VisitReports';
 import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 
-// iOS Design System Theme
-const iOSTheme = createTheme({
+// iOS Color Palette
+const iOSColors = {
+  // System Colors
+  systemBlue: '#007AFF',
+  systemGreen: '#34C759',
+  systemIndigo: '#5856D6',
+  systemOrange: '#FF9500',
+  systemPink: '#FF2D55',
+  systemPurple: '#AF52DE',
+  systemRed: '#FF3B30',
+  systemTeal: '#5AC8FA',
+  systemYellow: '#FFCC00',
+  
+  // Gray Scale
+  systemGray: '#8E8E93',
+  systemGray2: '#AEAEB2',
+  systemGray3: '#C7C7CC',
+  systemGray4: '#D1D1D6',
+  systemGray5: '#E5E5EA',
+  systemGray6: '#F2F2F7',
+  
+  // Background Colors
+  systemBackground: '#FFFFFF',
+  secondarySystemBackground: '#F2F2F7',
+  tertiarySystemBackground: '#FFFFFF',
+  
+  // Label Colors
+  label: '#000000',
+  secondaryLabel: '#3C3C4399',
+  tertiaryLabel: '#3C3C434D',
+  quaternaryLabel: '#3C3C432E',
+};
+
+const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#007AFF', // iOS Blue
-      light: '#5AC8FA', // iOS Light Blue
-      dark: '#0056CC', // iOS Dark Blue
+      main: iOSColors.systemBlue,
+      light: '#5AC8FA',
+      dark: '#0040DD',
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#5856D6', // iOS Purple
-      light: '#AF52DE', // iOS Pink
-      dark: '#3634A3', // iOS Dark Purple
+      main: iOSColors.systemPurple,
+      light: '#D0BCFF',
+      dark: '#7F39FB',
+      contrastText: '#FFFFFF',
     },
     error: {
-      main: '#FF3B30', // iOS Red
+      main: iOSColors.systemRed,
+      light: '#FFB4AB',
+      dark: '#BA1A1A',
     },
     warning: {
-      main: '#FF9500', // iOS Orange
+      main: iOSColors.systemOrange,
+      light: '#FFD580',
+      dark: '#C75200',
     },
     info: {
-      main: '#5AC8FA', // iOS Light Blue
+      main: iOSColors.systemTeal,
+      light: '#80DDFF',
+      dark: '#0096C7',
     },
     success: {
-      main: '#34C759', // iOS Green
+      main: iOSColors.systemGreen,
+      light: '#80E27E',
+      dark: '#087F23',
     },
     background: {
-      default: '#F2F2F7', // iOS System Gray 6
-      paper: '#FFFFFF', // iOS System Background
+      default: iOSColors.systemGray6,
+      paper: iOSColors.systemBackground,
     },
     text: {
-      primary: '#1C1C1E', // iOS Label
-      secondary: '#8E8E93', // iOS Secondary Label
-      disabled: '#C7C7CC', // iOS Tertiary Label
+      primary: iOSColors.label,
+      secondary: iOSColors.secondaryLabel,
+      disabled: iOSColors.quaternaryLabel,
     },
-    divider: 'rgba(0, 0, 0, 0.05)',
+    divider: iOSColors.systemGray5,
     action: {
-      active: '#007AFF',
-      hover: 'rgba(0, 122, 255, 0.04)',
-      selected: 'rgba(0, 122, 255, 0.08)',
-      disabled: '#C7C7CC',
-      disabledBackground: 'rgba(0, 0, 0, 0.02)',
+      active: iOSColors.systemBlue,
+      hover: iOSColors.systemBlue + '14', // 8% opacity
+      selected: iOSColors.systemBlue + '29', // 16% opacity
+      disabled: iOSColors.systemGray4,
+      disabledBackground: iOSColors.systemGray5,
     },
   },
   shape: {
-    borderRadius: 14, // iOS Standard Border Radius
+    borderRadius: 14, // iOS standard rounded corners
   },
   typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
     h1: {
-      fontSize: '34px',
       fontWeight: 700,
-      lineHeight: 1.2,
+      fontSize: '34px',
+      lineHeight: '41px',
       letterSpacing: '-0.02em',
     },
     h2: {
-      fontSize: '28px',
       fontWeight: 700,
-      lineHeight: 1.2,
+      fontSize: '28px',
+      lineHeight: '34px',
       letterSpacing: '-0.01em',
     },
     h3: {
-      fontSize: '22px',
       fontWeight: 600,
-      lineHeight: 1.2,
+      fontSize: '22px',
+      lineHeight: '28px',
     },
     h4: {
-      fontSize: '20px',
       fontWeight: 600,
-      lineHeight: 1.3,
+      fontSize: '20px',
+      lineHeight: '25px',
     },
     h5: {
-      fontSize: '18px',
       fontWeight: 600,
-      lineHeight: 1.3,
+      fontSize: '17px',
+      lineHeight: '22px',
     },
     h6: {
-      fontSize: '17px',
       fontWeight: 600,
-      lineHeight: 1.3,
+      fontSize: '15px',
+      lineHeight: '20px',
     },
     subtitle1: {
-      fontSize: '17px',
-      fontWeight: 400,
-      lineHeight: 1.4,
+      fontWeight: 500,
+      fontSize: '15px',
+      lineHeight: '20px',
     },
     subtitle2: {
-      fontSize: '15px',
-      fontWeight: 400,
-      lineHeight: 1.4,
+      fontWeight: 500,
+      fontSize: '13px',
+      lineHeight: '18px',
     },
     body1: {
-      fontSize: '17px',
       fontWeight: 400,
-      lineHeight: 1.4,
+      fontSize: '17px',
+      lineHeight: '22px',
     },
     body2: {
-      fontSize: '15px',
       fontWeight: 400,
-      lineHeight: 1.4,
+      fontSize: '15px',
+      lineHeight: '20px',
     },
     button: {
-      fontSize: '17px',
       fontWeight: 600,
       textTransform: 'none',
+      fontSize: '17px',
+      lineHeight: '22px',
       letterSpacing: '-0.01em',
     },
     caption: {
-      fontSize: '13px',
       fontWeight: 400,
-      lineHeight: 1.4,
+      fontSize: '12px',
+      lineHeight: '16px',
     },
     overline: {
-      fontSize: '11px',
       fontWeight: 500,
+      fontSize: '11px',
+      lineHeight: '13px',
       textTransform: 'uppercase',
-      letterSpacing: '0.08em',
+      letterSpacing: '0.06em',
     },
   },
-  shadows: [
-    'none',
-    '0px 2px 10px rgba(0, 0, 0, 0.03), 0px 1px 2px rgba(0, 0, 0, 0.03)', // iOS Card Shadow
-    '0px 4px 15px rgba(0, 0, 0, 0.05), 0px 2px 4px rgba(0, 0, 0, 0.03)',
-    '0px 8px 25px rgba(0, 0, 0, 0.08), 0px 3px 10px rgba(0, 0, 0, 0.03)',
-    '0px 12px 35px rgba(0, 0, 0, 0.1), 0px 4px 15px rgba(0, 0, 0, 0.05)',
-    ...Array(20).fill('none'),
-  ],
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
-          backgroundColor: '#F2F2F7',
-          color: '#1C1C1E',
-          overscrollBehaviorY: 'none',
+          WebkitTapHighlightColor: 'transparent',
         },
-        '*': {
-          WebkitOverflowScrolling: 'touch',
-        },
-        '::-webkit-scrollbar': {
+        '&::-webkit-scrollbar': {
           width: '8px',
           height: '8px',
         },
-        '::-webkit-scrollbar-track': {
-          background: 'transparent',
-        },
-        '::-webkit-scrollbar-thumb': {
-          background: 'rgba(0, 0, 0, 0.2)',
+        '&::-webkit-scrollbar-track': {
+          background: iOSColors.systemGray6,
           borderRadius: '4px',
-          backgroundClip: 'padding-box',
         },
-        '::-webkit-scrollbar-thumb:hover': {
-          background: 'rgba(0, 0, 0, 0.3)',
+        '&::-webkit-scrollbar-thumb': {
+          background: iOSColors.systemGray4,
+          borderRadius: '4px',
+          '&:hover': {
+            background: iOSColors.systemGray3,
+          },
         },
       },
     },
@@ -175,63 +215,53 @@ const iOSTheme = createTheme({
         root: {
           textTransform: 'none',
           fontWeight: 600,
-          borderRadius: 10,
-          padding: '12px 20px',
+          borderRadius: '14px',
+          padding: '12px 24px',
           fontSize: '17px',
+          lineHeight: '22px',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.3) 1%, transparent 1%)',
-            transform: 'translate(-50%, -50%) scale(0)',
-            transition: 'transform 0.3s ease-out',
-          },
-          '&:active::after': {
-            transform: 'translate(-50%, -50%) scale(10)',
+          '&:active': {
+            transform: 'scale(0.98)',
           },
         },
         contained: {
-          background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
-          boxShadow: '0 4px 8px rgba(0, 122, 255, 0.2), 0 1px 3px rgba(0, 122, 255, 0.15)',
+          boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 6px 12px rgba(0, 122, 255, 0.25), 0 2px 4px rgba(0, 122, 255, 0.2)',
-            transform: 'translateY(-1px)',
+            boxShadow: '0 4px 12px rgba(0, 122, 255, 0.3)',
           },
           '&:active': {
-            transform: 'scale(0.97)',
-            boxShadow: '0 2px 4px rgba(0, 122, 255, 0.2), 0 1px 2px rgba(0, 122, 255, 0.15)',
+            boxShadow: '0 2px 4px rgba(0, 122, 255, 0.2)',
           },
         },
         outlined: {
-          borderWidth: '2px',
+          borderWidth: '1.5px',
           '&:hover': {
-            borderWidth: '2px',
-            backgroundColor: 'rgba(0, 122, 255, 0.04)',
+            borderWidth: '1.5px',
           },
         },
-        text: {
-          '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)',
-          },
+        sizeSmall: {
+          padding: '8px 16px',
+          fontSize: '15px',
+          borderRadius: '12px',
+        },
+        sizeLarge: {
+          padding: '16px 32px',
+          fontSize: '17px',
+          borderRadius: '16px',
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 14,
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.03)',
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+          border: '1px solid transparent',
+          background: 'linear-gradient(white, white) padding-box, linear-gradient(145deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.04) 100%) border-box',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
             transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08), 0 3px 10px rgba(0, 0, 0, 0.03)',
           },
         },
       },
@@ -239,8 +269,17 @@ const iOSTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 14,
+          borderRadius: '16px',
           backgroundImage: 'none',
+        },
+        elevation1: {
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        },
+        elevation2: {
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+        },
+        elevation3: {
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
         },
       },
     },
@@ -248,15 +287,32 @@ const iOSTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 10,
-            backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            transition: 'all 0.2s ease',
+            borderRadius: '12px',
+            backgroundColor: iOSColors.systemGray6,
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              backgroundColor: iOSColors.systemGray5,
             },
             '&.Mui-focused': {
-              backgroundColor: '#FFFFFF',
-              boxShadow: '0 0 0 4px rgba(0, 122, 255, 0.1)',
+              backgroundColor: iOSColors.systemBackground,
+              boxShadow: `0 0 0 4px ${iOSColors.systemBlue}20`,
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: iOSColors.systemGray4,
+              borderWidth: '1px',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: iOSColors.systemGray3,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: iOSColors.systemBlue,
+              borderWidth: '2px',
+            },
+          },
+          '& .MuiInputLabel-root': {
+            fontSize: '15px',
+            '&.Mui-focused': {
+              color: iOSColors.systemBlue,
             },
           },
         },
@@ -265,99 +321,150 @@ const iOSTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: 'rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 1px 0 0 rgba(0, 0, 0, 0.1)',
           backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          borderBottom: `1px solid ${iOSColors.systemGray5}`,
         },
       },
     },
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          borderRight: '1px solid rgba(0, 0, 0, 0.05)',
-          background: 'rgba(255, 255, 255, 0.9)',
+          borderRight: `1px solid ${iOSColors.systemGray5}`,
           backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          width: '280px',
         },
       },
     },
-    MuiAlert: {
+    MuiSelect: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
-          border: '1px solid currentColor',
-          borderColor: 'inherit',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          borderRadius: '12px',
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: iOSColors.systemGray4,
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: iOSColors.systemGray3,
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: iOSColors.systemBlue,
+            borderWidth: '2px',
+          },
         },
       },
     },
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: '8px',
           fontWeight: 500,
+          fontSize: '13px',
+          height: '28px',
+        },
+        filled: {
+          boxShadow: 'none',
         },
       },
     },
-    MuiTableRow: {
+    MuiAlert: {
       styleOverrides: {
         root: {
-          '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+          borderRadius: '14px',
+          padding: '16px',
+        },
+        standardSuccess: {
+          backgroundColor: iOSColors.systemGreen + '20',
+          color: iOSColors.systemGreen,
+        },
+        standardError: {
+          backgroundColor: iOSColors.systemRed + '20',
+          color: iOSColors.systemRed,
+        },
+        standardWarning: {
+          backgroundColor: iOSColors.systemOrange + '20',
+          color: iOSColors.systemOrange,
+        },
+        standardInfo: {
+          backgroundColor: iOSColors.systemBlue + '20',
+          color: iOSColors.systemBlue,
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: '20px',
+          margin: '16px',
+          maxWidth: 'calc(100% - 32px)',
+          maxHeight: 'calc(100% - 32px)',
+        },
+      },
+    },
+    MuiTable: {
+      styleOverrides: {
+        root: {
+          '& .MuiTableCell-root': {
+            borderBottomColor: iOSColors.systemGray5,
+            padding: '12px 16px',
+          },
+          '& .MuiTableHead-root .MuiTableCell-root': {
+            fontWeight: 600,
+            fontSize: '13px',
+            color: iOSColors.secondaryLabel,
           },
         },
       },
     },
-    MuiListItemButton: {
+    MuiListItem: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: '12px',
+          margin: '4px 8px',
+          padding: '8px 12px',
+          transition: 'all 0.2s ease',
           '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            backgroundColor: iOSColors.systemGray5,
           },
           '&.Mui-selected': {
-            backgroundColor: 'rgba(0, 122, 255, 0.08)',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 122, 255, 0.12)',
-            },
+            backgroundColor: iOSColors.systemBlue + '14',
           },
-        },
-      },
-    },
-    MuiLinearProgress: {
-      styleOverrides: {
-        root: {
-          borderRadius: 3,
-          height: 6,
         },
       },
     },
   },
 });
 
+// Animation wrapper component
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <Routes location={location}>
+      <Route path="/login" element={<Login />} />
+      <Route element={<PrivateRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/new-visit" element={<NewVisit />} />
+          <Route path="/visits" element={<VisitReports />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+};
+
 function App() {
   return (
-    <ThemeProvider theme={iOSTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            <Route element={<PrivateRoute />}>
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/new-visit" element={<NewVisit />} />
-                <Route path="/visits" element={<VisitReports />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-              </Route>
-            </Route>
-          </Routes>
+          {/* PWA Install Prompt */}
+          <PWAInstallPrompt />
+          <AnimatedRoutes />
         </AuthProvider>
       </Router>
     </ThemeProvider>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Paper,
@@ -15,28 +15,44 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  InputAdornment,
   Fade,
+  Zoom,
+  Slide,
+  Grow,
+  InputAdornment,
+  Divider,
+  Chip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signIn, resetPassword } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { APP_NAME, SUPPORT_EMAIL } from '../utils/constants';
-import { 
-  Business, 
-  Login as LoginIcon, 
-  Close, 
+import {
+  Business,
+  Login as LoginIcon,
+  Close,
   Email,
   Lock,
   Visibility,
   VisibilityOff,
-  ArrowForward,
+  Fingerprint,
+  Face,
+  Apple,
+  Google,
+  Security,
+  ArrowBackIos,
+  CheckCircle,
+  Error as ErrorIcon,
+  Info
 } from '@mui/icons-material';
+import { iOSUtils, iOSStyles } from '../utils/iosAnimations';
+import useIOSAnimations from '../hooks/useIOSAnimations';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -44,47 +60,150 @@ const Login = () => {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+  
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const formRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  
+  const { hapticFeedback, pressAnimation, shakeAnimation, fadeAnimation } = useIOSAnimations();
+
+  useEffect(() => {
+    // Simulate page load animation
+    setTimeout(() => setPageLoaded(true), 100);
+    
+    // Check for biometric authentication
+    const checkBiometric = () => {
+      // In a real app, you would check for actual biometric capabilities
+      setBiometricAvailable(Math.random() > 0.5); // Random for demo
+    };
+    
+    checkBiometric();
+    
+    // Focus email field on load
+    if (emailRef.current) {
+      setTimeout(() => emailRef.current?.focus(), 300);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // iOS-style validation animation
+    if (!email || !password) {
+      if (!email && emailRef.current) {
+        shakeAnimation(emailRef.current);
+        emailRef.current.focus();
+      } else if (!password && passwordRef.current) {
+        shakeAnimation(passwordRef.current);
+        passwordRef.current.focus();
+      }
+      hapticFeedback('error');
+      setError('Please fill in all fields');
+      return;
+    }
+    
     setLoading(true);
-
+    hapticFeedback('light');
+    
     const result = await signIn(email, password);
     
     if (result.success) {
+      hapticFeedback('success');
       setUser(result.user);
-      // iOS-style navigation animation
-      document.body.style.opacity = 0;
-      setTimeout(() => navigate('/dashboard'), 300);
+      
+      // iOS-style success animation
+      if (formRef.current) {
+        formRef.current.style.transform = 'scale(0.95)';
+        formRef.current.style.opacity = '0';
+        formRef.current.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      }
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 300);
     } else {
+      hapticFeedback('error');
       setError(result.error || 'Login failed. Please try again.');
+      
+      // Shake animation for error
+      if (formRef.current) {
+        shakeAnimation(formRef.current);
+      }
     }
     
     setLoading(false);
   };
 
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    hapticFeedback('medium');
+    
+    // Simulate biometric authentication
+    setTimeout(async () => {
+      if (Math.random() > 0.3) { // 70% success rate for demo
+        hapticFeedback('success');
+        
+        // For demo, use a test account
+        const result = await signIn('demo@salessynapse.com', 'demo123');
+        
+        if (result.success) {
+          setUser(result.user);
+          
+          if (formRef.current) {
+            formRef.current.style.transform = 'scale(0.95)';
+            formRef.current.style.opacity = '0';
+            formRef.current.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+          }
+          
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 300);
+        }
+      } else {
+        hapticFeedback('error');
+        setError('Biometric authentication failed. Please try again.');
+      }
+      
+      setBiometricLoading(false);
+    }, 1500);
+  };
+
   const handleResetPassword = async () => {
     if (!resetEmail) {
       setResetError('Please enter your email address');
+      hapticFeedback('error');
       return;
     }
-
+    
     setResetLoading(true);
     setResetError('');
+    hapticFeedback('light');
     
     const result = await resetPassword(resetEmail);
     
     if (result.success) {
+      hapticFeedback('success');
       setResetSuccess(true);
+      
       setTimeout(() => {
         setResetDialogOpen(false);
         setResetSuccess(false);
         setResetEmail('');
       }, 3000);
     } else {
+      hapticFeedback('error');
       setResetError(result.error);
     }
     
@@ -92,6 +211,7 @@ const Login = () => {
   };
 
   const handleResetDialogClose = () => {
+    hapticFeedback('light');
     setResetDialogOpen(false);
     setResetEmail('');
     setResetError('');
@@ -99,153 +219,254 @@ const Login = () => {
   };
 
   const handleContactAdmin = () => {
-    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${APP_NAME} Support Request&body=Hello Harpinder,%0D%0A%0D%0AI need assistance with ${APP_NAME}.%0D%0A%0D%0APlease help with:`;
+    hapticFeedback('light');
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${APP_NAME} Support Request&body=Hello,%0D%0A%0D%0AI need assistance with ${APP_NAME}.%0D%0A%0D%0APlease help with:`;
+  };
+
+  const handleSocialLogin = (provider) => {
+    hapticFeedback('light');
+    // For demo purposes only
+    alert(`${provider} login would be implemented in production`);
   };
 
   return (
     <>
-      <Container component="main" maxWidth="xs">
+      <Container 
+        component="main" 
+        maxWidth="xs"
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
         <CssBaseline />
+        
+        {/* iOS-style Dynamic Background */}
         <Box
           sx={{
-            marginTop: { xs: 4, sm: 8 },
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            opacity: 0.1,
+            zIndex: -1,
           }}
-        >
-          <Fade in={true} timeout={500}>
-            <Paper 
-              elevation={0}
-              sx={{ 
-                p: { xs: 3, sm: 4 },
-                width: '100%',
-                borderRadius: '20px',
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                overflow: 'hidden',
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #007AFF 0%, #5856D6 100%)',
+        />
+        
+        {/* Main Login Card */}
+        <Fade in={pageLoaded} timeout={500}>
+          <Box
+            ref={formRef}
+            sx={{
+              width: '100%',
+              maxWidth: isMobile ? '100%' : '400px',
+              animation: pageLoaded ? 'slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+              '@keyframes slideUp': {
+                from: { opacity: 0, transform: 'translateY(40px)' },
+                to: { opacity: 1, transform: 'translateY(0)' },
+              },
+            }}
+          >
+            {/* iOS-style Header */}
+            <Box
+              sx={{
+                textAlign: 'center',
+                mb: 4,
+                animation: pageLoaded ? 'fadeIn 0.8s ease-out 0.2s both' : 'none',
+                '@keyframes fadeIn': {
+                  from: { opacity: 0, transform: 'translateY(-20px)' },
+                  to: { opacity: 1, transform: 'translateY(0)' },
                 },
               }}
             >
-              {/* iOS Style Background Pattern */}
-              <Box sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'radial-gradient(circle at 20% 80%, rgba(0, 122, 255, 0.05) 0%, transparent 50%)',
-                pointerEvents: 'none',
-              }} />
-              
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                mb: 4,
-                position: 'relative',
-                zIndex: 1,
-              }}>
-                <Box sx={{
+              {/* Logo with iOS-style shine */}
+              <Box
+                sx={{
+                  position: 'relative',
                   width: 80,
                   height: 80,
+                  margin: '0 auto 20px',
+                  borderRadius: iOSStyles.borderRadius.large,
                   background: 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
-                  borderRadius: '18px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mb: 3,
-                  boxShadow: '0 4px 20px rgba(0, 122, 255, 0.3)',
-                  animation: 'iosSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                }}>
-                  <Business sx={{ 
-                    fontSize: 40, 
-                    color: 'white',
-                  }} />
-                </Box>
-                <Typography 
-                  component="h1" 
-                  variant="h4" 
-                  sx={{ 
-                    mt: 1, 
+                  boxShadow: '0 8px 32px rgba(0, 122, 255, 0.3)',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: iOSStyles.borderRadius.large,
+                    background: 'linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%)',
+                    opacity: 0.5,
+                  },
+                }}
+              >
+                <Business sx={{ fontSize: 40, color: 'white' }} />
+              </Box>
+              
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1,
+                  fontSize: isMobile ? '28px' : '34px',
+                }}
+              >
+                {APP_NAME}
+              </Typography>
+              
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: iOSStyles.colors.secondaryLabel,
+                  fontSize: isMobile ? '15px' : '17px',
+                  opacity: 0.8,
+                }}
+              >
+                AI-Powered Sales Intelligence
+              </Typography>
+            </Box>
+
+            {/* Login Card */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: isMobile ? 3 : 4,
+                borderRadius: iOSStyles.borderRadius.xlarge,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: `1px solid ${iOSStyles.colors.systemGray5}`,
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
+                animation: pageLoaded ? 'scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both' : 'none',
+                '@keyframes scaleIn': {
+                  from: { opacity: 0, transform: 'scale(0.95)' },
+                  to: { opacity: 1, transform: 'scale(1)' },
+                },
+              }}
+            >
+              {/* Login Header */}
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
                     fontWeight: 700,
-                    background: 'linear-gradient(90deg, #007AFF 0%, #5856D6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    letterSpacing: '-0.02em',
+                    color: iOSStyles.colors.label,
+                    mb: 1,
+                    fontSize: isMobile ? '20px' : '22px',
                   }}
                 >
-                  {APP_NAME}
+                  Welcome Back
                 </Typography>
-                <Typography 
-                  variant="subtitle1" 
-                  color="text.secondary" 
-                  align="center" 
-                  sx={{ 
-                    mt: 1.5,
-                    fontSize: '15px',
-                    fontWeight: 400,
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: iOSStyles.colors.secondaryLabel,
+                    fontSize: isMobile ? '14px' : '15px',
                   }}
                 >
-                  AI-Powered Sales Intelligence Platform
+                  Sign in to continue to your dashboard
                 </Typography>
               </Box>
 
-              <Typography 
-                component="h2" 
-                variant="h6" 
-                align="center" 
-                color="text.primary" 
-                gutterBottom
-                sx={{
-                  fontSize: '20px',
-                  fontWeight: 600,
-                  mb: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 1,
-                }}
-              >
-                <LoginIcon sx={{ color: '#007AFF' }} />
-                Sign in to your account
-              </Typography>
-
+              {/* Error Alert */}
               {error && (
-                <Alert 
-                  severity="error" 
-                  sx={{ 
-                    mb: 3,
-                    borderRadius: '10px',
-                    border: '1px solid #FF3B30',
-                    background: 'rgba(255, 59, 48, 0.1)',
-                    '& .MuiAlert-icon': {
-                      alignItems: 'center',
-                      color: '#FF3B30',
-                    },
-                    animation: 'iosSpring 0.4s',
-                  }}
-                >
-                  {error}
-                </Alert>
+                <Zoom in={!!error}>
+                  <Alert
+                    severity="error"
+                    icon={<ErrorIcon />}
+                    sx={{
+                      mb: 3,
+                      borderRadius: iOSStyles.borderRadius.medium,
+                      border: `1px solid ${iOSStyles.colors.systemRed}40`,
+                      backgroundColor: `${iOSStyles.colors.systemRed}15`,
+                      animation: 'shake 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '@keyframes shake': {
+                        '0%, 100%': { transform: 'translateX(0)' },
+                        '25%': { transform: 'translateX(-4px)' },
+                        '75%': { transform: 'translateX(4px)' },
+                      },
+                    }}
+                    onClose={() => setError('')}
+                  >
+                    {error}
+                  </Alert>
+                </Zoom>
               )}
 
-              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+              {/* Biometric Login Option */}
+              {biometricAvailable && (
+                <Grow in={biometricAvailable}>
+                  <Box sx={{ mb: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleBiometricLogin}
+                      disabled={biometricLoading || loading}
+                      sx={{
+                        py: 2,
+                        borderRadius: iOSStyles.borderRadius.large,
+                        backgroundColor: iOSStyles.colors.systemBackground,
+                        border: `1.5px solid ${iOSStyles.colors.systemGray4}`,
+                        color: iOSStyles.colors.label,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '17px',
+                        '&:hover': {
+                          backgroundColor: iOSStyles.colors.systemGray6,
+                          borderColor: iOSStyles.colors.systemGray3,
+                        },
+                        '&:active': {
+                          transform: 'scale(0.98)',
+                        },
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}
+                      startIcon={
+                        biometricLoading ? (
+                          <CircularProgress size={20} />
+                        ) : (
+                          <Fingerprint sx={{ color: iOSStyles.colors.systemBlue }} />
+                        )
+                      }
+                    >
+                      {biometricLoading ? 'Authenticating...' : 'Use Face ID'}
+                    </Button>
+                    
+                    <Box sx={{ textAlign: 'center', mt: 2 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: iOSStyles.colors.tertiaryLabel,
+                          display: 'block',
+                          mb: 0.5,
+                        }}
+                      >
+                        or continue with
+                      </Typography>
+                      <Divider sx={{ my: 2 }} />
+                    </Box>
+                  </Box>
+                </Grow>
+              )}
+
+              {/* Login Form */}
+              <Box component="form" onSubmit={handleSubmit} noValidate>
                 {/* Email Field */}
                 <TextField
+                  inputRef={emailRef}
                   margin="normal"
                   required
                   fullWidth
@@ -253,51 +474,44 @@ const Login = () => {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
-                  autoFocus
+                  autoFocus={!isMobile}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
+                  disabled={loading || biometricLoading}
                   variant="outlined"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email sx={{ color: '#8E8E93' }} />
+                        <Email sx={{ color: iOSStyles.colors.systemGray }} />
                       </InputAdornment>
                     ),
-                    sx: {
-                      borderRadius: '12px',
-                      fontSize: '17px',
-                      '& .MuiOutlinedInput-input': {
-                        padding: '16px',
-                      },
-                      '&.Mui-focused': {
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#007AFF',
-                          borderWidth: '2px',
-                        },
-                      },
-                    },
-                  }}
-                  InputLabelProps={{
-                    sx: {
-                      fontSize: '15px',
-                      '&.Mui-focused': {
-                        color: '#007AFF',
-                      },
-                    },
                   }}
                   sx={{
+                    mb: 2,
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      borderRadius: iOSStyles.borderRadius.medium,
+                      backgroundColor: iOSStyles.colors.systemGray6,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        backgroundColor: iOSStyles.colors.systemGray5,
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: iOSStyles.colors.systemBackground,
+                        boxShadow: `0 0 0 4px ${iOSStyles.colors.systemBlue}20`,
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: '15px',
+                      '&.Mui-focused': {
+                        color: iOSStyles.colors.systemBlue,
                       },
                     },
                   }}
                 />
-                
+
                 {/* Password Field */}
                 <TextField
+                  inputRef={passwordRef}
                   margin="normal"
                   required
                   fullWidth
@@ -308,249 +522,355 @@ const Login = () => {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
+                  disabled={loading || biometricLoading}
                   variant="outlined"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock sx={{ color: '#8E8E93' }} />
+                        <Lock sx={{ color: iOSStyles.colors.systemGray }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
+                          onClick={() => {
+                            hapticFeedback('light');
+                            setShowPassword(!showPassword);
+                          }}
                           edge="end"
-                          sx={{ color: '#8E8E93' }}
+                          sx={{ color: iOSStyles.colors.systemGray }}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
-                    sx: {
-                      borderRadius: '12px',
-                      fontSize: '17px',
-                      '& .MuiOutlinedInput-input': {
-                        padding: '16px',
-                      },
-                      '&.Mui-focused': {
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#007AFF',
-                          borderWidth: '2px',
-                        },
-                      },
-                    },
-                  }}
-                  InputLabelProps={{
-                    sx: {
-                      fontSize: '15px',
-                      '&.Mui-focused': {
-                        color: '#007AFF',
-                      },
-                    },
                   }}
                   sx={{
+                    mb: 3,
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      borderRadius: iOSStyles.borderRadius.medium,
+                      backgroundColor: iOSStyles.colors.systemGray6,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        backgroundColor: iOSStyles.colors.systemGray5,
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: iOSStyles.colors.systemBackground,
+                        boxShadow: `0 0 0 4px ${iOSStyles.colors.systemBlue}20`,
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: '15px',
+                      '&.Mui-focused': {
+                        color: iOSStyles.colors.systemBlue,
                       },
                     },
                   }}
                 />
 
-                {/* iOS Style Sign In Button */}
+                {/* Remember Me & Forgot Password */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Chip
+                      label="Remember me"
+                      size="small"
+                      onClick={() => {
+                        hapticFeedback('light');
+                        setRememberMe(!rememberMe);
+                      }}
+                      clickable
+                      color={rememberMe ? 'primary' : 'default'}
+                      variant={rememberMe ? 'filled' : 'outlined'}
+                      sx={{
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        '&:active': {
+                          transform: 'scale(0.95)',
+                        },
+                        transition: 'transform 0.2s ease',
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    onClick={() => {
+                      hapticFeedback('light');
+                      setResetDialogOpen(true);
+                    }}
+                    sx={{
+                      color: iOSStyles.colors.systemBlue,
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      fontSize: '15px',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                      '&:active': {
+                        opacity: 0.7,
+                      },
+                    }}
+                  >
+                    Forgot password?
+                  </Typography>
+                </Box>
+
+                {/* Sign In Button */}
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
                   size="large"
-                  disabled={loading}
-                  endIcon={!loading && <ArrowForward />}
-                  sx={{ 
-                    mt: 3, 
-                    mb: 2,
-                    py: 1.75,
-                    borderRadius: '12px',
+                  disabled={loading || biometricLoading}
+                  sx={{
+                    py: 2,
+                    mb: 3,
+                    borderRadius: iOSStyles.borderRadius.large,
+                    backgroundColor: iOSStyles.colors.systemBlue,
                     fontSize: '17px',
                     fontWeight: 600,
                     textTransform: 'none',
-                    background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
                     boxShadow: '0 4px 20px rgba(0, 122, 255, 0.3)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 6px 25px rgba(0, 122, 255, 0.4)',
-                      background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
+                      backgroundColor: '#0056CC',
+                      boxShadow: '0 6px 24px rgba(0, 122, 255, 0.4)',
                     },
                     '&:active': {
                       transform: 'scale(0.98)',
+                      boxShadow: '0 2px 12px rgba(0, 122, 255, 0.2)',
                     },
                     '&.Mui-disabled': {
-                      background: '#C7C7CC',
-                      boxShadow: 'none',
+                      backgroundColor: iOSStyles.colors.systemGray4,
+                      color: iOSStyles.colors.systemGray2,
                     },
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
+                  startIcon={
+                    loading ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <LoginIcon />
+                    )
+                  }
                 >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'Sign In'
-                  )}
+                  {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
-              </Box>
 
-              {/* iOS Style Footer Links */}
-              <Box sx={{ 
-                mt: 4, 
-                pt: 3, 
-                borderTop: '1px solid rgba(0, 0, 0, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-              }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
+                {/* Social Login Options */}
+                <Box sx={{ mb: 4 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      textAlign: 'center',
+                      color: iOSStyles.colors.secondaryLabel,
+                      mb: 2,
                       fontSize: '15px',
-                      '&:hover': {
-                        color: '#007AFF',
-                        cursor: 'pointer',
-                      },
-                      transition: 'color 0.2s ease',
                     }}
-                    onClick={() => setResetDialogOpen(true)}
                   >
-                    Forgot Password?
+                    Or sign in with
                   </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: '15px',
-                      '&:hover': {
-                        color: '#007AFF',
-                        cursor: 'pointer',
-                      },
-                      transition: 'color 0.2s ease',
-                    }}
-                    onClick={handleContactAdmin}
-                  >
-                    Contact Admin
-                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                    <IconButton
+                      onClick={() => handleSocialLogin('Apple')}
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: iOSStyles.borderRadius.medium,
+                        backgroundColor: iOSStyles.colors.systemGray6,
+                        border: `1px solid ${iOSStyles.colors.systemGray5}`,
+                        '&:hover': {
+                          backgroundColor: iOSStyles.colors.systemGray5,
+                        },
+                        '&:active': {
+                          transform: 'scale(0.95)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Apple sx={{ color: iOSStyles.colors.label }} />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleSocialLogin('Google')}
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: iOSStyles.borderRadius.medium,
+                        backgroundColor: iOSStyles.colors.systemGray6,
+                        border: `1px solid ${iOSStyles.colors.systemGray5}`,
+                        '&:hover': {
+                          backgroundColor: iOSStyles.colors.systemGray5,
+                        },
+                        '&:active': {
+                          transform: 'scale(0.95)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Google sx={{ color: iOSStyles.colors.label }} />
+                    </IconButton>
+                  </Box>
                 </Box>
-                
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary" 
-                  align="center"
-                  sx={{ 
-                    opacity: 0.6,
+
+                {/* Contact Admin */}
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: iOSStyles.colors.secondaryLabel,
+                      mb: 2,
+                      fontSize: '15px',
+                    }}
+                  >
+                    New to {APP_NAME}?
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={handleContactAdmin}
+                    sx={{
+                      borderRadius: iOSStyles.borderRadius.large,
+                      borderColor: iOSStyles.colors.systemGray4,
+                      color: iOSStyles.colors.label,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '15px',
+                      '&:hover': {
+                        borderColor: iOSStyles.colors.systemGray3,
+                        backgroundColor: iOSStyles.colors.systemGray6,
+                      },
+                      '&:active': {
+                        transform: 'scale(0.98)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                    startIcon={<Security />}
+                  >
+                    Request Access
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+
+            {/* Footer */}
+            <Fade in={pageLoaded} timeout={800}>
+              <Box
+                sx={{
+                  mt: 4,
+                  textAlign: 'center',
+                  animation: 'fadeIn 1s ease-out 0.5s both',
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: iOSStyles.colors.tertiaryLabel,
+                    display: 'block',
                     fontSize: '13px',
                   }}
                 >
-                  New users require administrator setup
-                </Typography>
-              </Box>
-
-              {/* Copyright Footer */}
-              <Box sx={{ 
-                mt: 4, 
-                pt: 3, 
-                borderTop: '1px solid rgba(0, 0, 0, 0.05)', 
-                textAlign: 'center' 
-              }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '13px' }}>
                   © {new Date().getFullYear()} RV Solutions
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, fontSize: '12px' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: iOSStyles.colors.tertiaryLabel,
+                    display: 'block',
+                    fontSize: '13px',
+                  }}
+                >
                   Developed in CEO Office Lab by Harpinder Singh
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, fontSize: '12px' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: iOSStyles.colors.tertiaryLabel,
+                    display: 'block',
+                    fontSize: '13px',
+                  }}
+                >
                   For Support: {SUPPORT_EMAIL}
                 </Typography>
               </Box>
-            </Paper>
-          </Fade>
-        </Box>
+            </Fade>
+          </Box>
+        </Fade>
       </Container>
 
-      {/* iOS Style Password Reset Dialog */}
-      <Dialog 
-        open={resetDialogOpen} 
+      {/* Password Reset Dialog - iOS Style */}
+      <Dialog
+        open={resetDialogOpen}
         onClose={handleResetDialogClose}
         maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '20px',
-            border: '1px solid rgba(0, 0, 0, 0.05)',
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: iOSStyles.borderRadius.xlarge,
+            margin: isMobile ? 2 : 3,
+            maxWidth: isMobile ? 'calc(100% - 32px)' : '400px',
             overflow: 'hidden',
+            border: `1px solid ${iOSStyles.colors.systemGray5}`,
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+            animation: resetDialogOpen ? 'scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
           },
         }}
       >
-        <DialogTitle sx={{ 
-          p: 3, 
-          pb: 2,
-          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-          background: 'linear-gradient(90deg, #007AFF 0%, #5856D6 100%)',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Reset Password
-          </Typography>
-          <IconButton 
-            onClick={handleResetDialogClose} 
-            size="small"
-            sx={{ color: 'white' }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3 }}>
-          {resetSuccess ? (
-            <Alert 
-              severity="success" 
-              sx={{ 
-                my: 2, 
-                borderRadius: '12px',
-                border: '1px solid #34C759',
-                background: 'rgba(52, 199, 89, 0.1)',
+        <DialogTitle sx={{ p: 3, pb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Reset Password
+            </Typography>
+            <IconButton
+              onClick={handleResetDialogClose}
+              size="small"
+              sx={{
+                color: iOSStyles.colors.systemGray,
+                '&:active': { transform: 'scale(0.9)' },
+                transition: 'transform 0.2s ease',
               }}
             >
-              Password reset email sent! Please check your inbox.
-            </Alert>
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, pt: 0 }}>
+          {resetSuccess ? (
+            <Zoom in={resetSuccess}>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CheckCircle
+                  sx={{
+                    fontSize: 64,
+                    color: iOSStyles.colors.systemGreen,
+                    mb: 3,
+                    animation: 'scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                />
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                  Email Sent!
+                </Typography>
+                <Typography variant="body2" sx={{ color: iOSStyles.colors.secondaryLabel }}>
+                  Password reset email sent! Please check your inbox and follow the instructions.
+                </Typography>
+              </Box>
+            </Zoom>
           ) : (
             <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: '15px' }}>
+              <Typography variant="body2" sx={{ color: iOSStyles.colors.secondaryLabel, mb: 3 }}>
                 Enter your email address and we'll send you a link to reset your password.
               </Typography>
-              
+
               {resetError && (
-                <Alert 
-                  severity="error" 
-                  sx={{ 
-                    mb: 2, 
-                    borderRadius: '10px',
-                    border: '1px solid #FF3B30',
-                    background: 'rgba(255, 59, 48, 0.1)',
-                  }}
-                >
-                  {resetError}
-                </Alert>
+                <Slide direction="down" in={!!resetError}>
+                  <Alert
+                    severity="error"
+                    sx={{
+                      mb: 2,
+                      borderRadius: iOSStyles.borderRadius.medium,
+                      animation: 'shake 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    onClose={() => setResetError('')}
+                  >
+                    {resetError}
+                  </Alert>
+                </Slide>
               )}
 
               <TextField
@@ -561,44 +881,49 @@ const Login = () => {
                 onChange={(e) => setResetEmail(e.target.value)}
                 disabled={resetLoading}
                 variant="outlined"
+                autoFocus
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email sx={{ color: '#8E8E93' }} />
+                      <Email sx={{ color: iOSStyles.colors.systemGray }} />
                     </InputAdornment>
                   ),
-                  sx: {
-                    borderRadius: '12px',
-                    fontSize: '17px',
-                    '& .MuiOutlinedInput-input': {
-                      padding: '16px',
-                    },
-                  },
-                }}
-                InputLabelProps={{
-                  sx: { fontSize: '15px' },
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                    borderRadius: iOSStyles.borderRadius.medium,
+                    backgroundColor: iOSStyles.colors.systemGray6,
+                    '&:hover': {
+                      backgroundColor: iOSStyles.colors.systemGray5,
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: iOSStyles.colors.systemBackground,
+                      boxShadow: `0 0 0 4px ${iOSStyles.colors.systemBlue}20`,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '15px',
+                    '&.Mui-focused': {
+                      color: iOSStyles.colors.systemBlue,
+                    },
                   },
                 }}
-                autoFocus
               />
             </>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 2 }}>
-          {!resetSuccess ? (
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          {!resetSuccess && (
             <>
-              <Button 
-                onClick={handleResetDialogClose} 
+              <Button
+                onClick={handleResetDialogClose}
                 disabled={resetLoading}
                 sx={{
-                  borderRadius: '10px',
-                  px: 3,
-                  py: 1,
-                  fontWeight: 500,
+                  borderRadius: iOSStyles.borderRadius.medium,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:active': { transform: 'scale(0.98)' },
+                  transition: 'transform 0.2s ease',
                 }}
               >
                 Cancel
@@ -607,31 +932,35 @@ const Login = () => {
                 onClick={handleResetPassword}
                 variant="contained"
                 disabled={resetLoading}
-                startIcon={resetLoading ? <CircularProgress size={20} /> : <Email />}
                 sx={{
-                  borderRadius: '10px',
-                  px: 3,
-                  py: 1,
+                  borderRadius: iOSStyles.borderRadius.medium,
+                  textTransform: 'none',
                   fontWeight: 600,
-                  background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
+                  backgroundColor: iOSStyles.colors.systemBlue,
                   '&:hover': {
-                    background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
+                    backgroundColor: '#0056CC',
                   },
+                  '&:active': { transform: 'scale(0.98)' },
+                  transition: 'all 0.2s ease',
                 }}
+                startIcon={resetLoading ? <CircularProgress size={20} /> : <Email />}
               >
                 {resetLoading ? 'Sending...' : 'Send Reset Link'}
               </Button>
             </>
-          ) : (
-            <Button 
-              onClick={handleResetDialogClose} 
-              variant="contained" 
+          )}
+          {resetSuccess && (
+            <Button
+              onClick={handleResetDialogClose}
+              variant="contained"
               fullWidth
               sx={{
-                borderRadius: '12px',
-                py: 1.5,
+                borderRadius: iOSStyles.borderRadius.medium,
+                textTransform: 'none',
                 fontWeight: 600,
-                background: 'linear-gradient(180deg, #007AFF 0%, #0056CC 100%)',
+                backgroundColor: iOSStyles.colors.systemBlue,
+                '&:active': { transform: 'scale(0.98)' },
+                transition: 'transform 0.2s ease',
               }}
             >
               Close
@@ -639,6 +968,60 @@ const Login = () => {
           )}
         </DialogActions>
       </Dialog>
+
+      {/* iOS-style Loading Overlay */}
+      {(loading || biometricLoading) && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            animation: 'fadeIn 0.3s ease-out',
+          }}
+        >
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{
+                color: iOSStyles.colors.systemBlue,
+                mb: 3,
+                animation: 'spin 1s linear infinite',
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: iOSStyles.colors.label,
+                mb: 1,
+              }}
+            >
+              {biometricLoading ? 'Authenticating...' : 'Signing in...'}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: iOSStyles.colors.secondaryLabel,
+                fontSize: '15px',
+              }}
+            >
+              {biometricLoading
+                ? 'Please use Face ID or Touch ID'
+                : 'Please wait a moment'}
+            </Typography>
+          </Box>
+        </Box>
+      )}
     </>
   );
 };
