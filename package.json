@@ -37,7 +37,6 @@
     "react-router-dom": "^6.21.1",
     "recharts": "^2.10.4",
     "sharp": "^0.34.5",
-    "web-vitals": "^5.1.0",
     "xlsx": "^0.18.5"
   },
   "scripts": {
