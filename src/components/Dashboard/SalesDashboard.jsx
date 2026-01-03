@@ -24,6 +24,9 @@ import {
   CalendarToday,
   CheckCircle,
   PendingActions,
+  AddCircle,
+  ListAlt,
+  Assessment,
 } from '@mui/icons-material';
 import { getSalesDashboardStats } from '../../services/dashboardService';
 import { useAuth } from '../../context/AuthContext';
