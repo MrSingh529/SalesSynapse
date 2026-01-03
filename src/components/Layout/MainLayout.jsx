@@ -480,8 +480,8 @@ const MainLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: '100%',  // ← CHANGED from calc
-          ml: { sm: `${drawerWidth}px` },  // ← Already correct
+          width: { xs: '100%', sm: `calc(100% - ${drawerWidth}px)` },  // ← FIXED
+          ml: { sm: `${drawerWidth}px` },
           minHeight: '100vh',
           bgcolor: 'background.default',
           display: 'flex',
@@ -493,10 +493,10 @@ const MainLayout = () => {
 
         <Box sx={{ 
           flexGrow: 1, 
-          p: { xs: 2, sm: 3 },
+          p: { xs: 2, sm: 3, md: 4 },  // ← More padding on desktop
           overflow: 'auto',
           width: '100%',
-          maxWidth: { xs: '100%', sm: `calc(100vw - ${drawerWidth}px)` },  // ← ADDED
+          maxWidth: '100%',  // ← REMOVED constraint
         }}>
           <AnimatePresence mode="wait">
             <motion.div
@@ -506,7 +506,7 @@ const MainLayout = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
-              style={{ width: '100%' }}  // ← SIMPLIFIED
+              style={{ width: '100%', maxWidth: '1400px', margin: '0 auto' }}  // ← ADDED max-width
             >
               <Outlet />
             </motion.div>

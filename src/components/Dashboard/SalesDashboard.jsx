@@ -54,7 +54,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
       <Card
         sx={{
           height: '100%',
-          minHeight: '160px', // ← ADD THIS
+          minHeight: '180px',  // ← Increased from 160px
           background: gradient,
           color: 'white',
           borderRadius: 3,
@@ -74,17 +74,17 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '150px',
-            height: '150px',
+            width: '180px',  // ← Increased from 150px
+            height: '180px',
             opacity: 0.1,
             transform: 'translate(30%, -30%)',
           }}
         >
-          {React.cloneElement(icon, { sx: { fontSize: 150 } })}
+          {React.cloneElement(icon, { sx: { fontSize: 180 } })}  {/* ← Increased from 150 */}
         </Box>
 
-        <CardContent sx={{ position: 'relative', zIndex: 1, p: 3 }}> {/* ← Changed p: 3 */}
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+        <CardContent sx={{ position: 'relative', zIndex: 1, p: 3.5 }}>  {/* ← Increased padding */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2.5 }}>  {/* ← More margin */}
             <Box
               sx={{
                 p: 1.5,
@@ -96,7 +96,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
                 justifyContent: 'center',
               }}
             >
-              {React.cloneElement(icon, { sx: { fontSize: 28 } })}
+              {React.cloneElement(icon, { sx: { fontSize: 32 } })}  {/* ← Increased from 28 */}
             </Box>
           </Box>
 
@@ -106,7 +106,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
               opacity: 0.9,
               fontWeight: 500,
               mb: 1.5,
-              fontSize: '14px',
+              fontSize: '15px',  // ← Increased from 14px
               letterSpacing: '0.5px',
             }}
           >
@@ -117,7 +117,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
             variant="h3"
             sx={{
               fontWeight: 700,
-              fontSize: { xs: '28px', sm: '32px', md: '36px' },
+              fontSize: { xs: '32px', sm: '36px', md: '40px' },  // ← Increased sizes
               lineHeight: 1.2,
             }}
           >
@@ -277,7 +277,7 @@ const SalesDashboard = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%' }}> {/* ← ADD maxWidth */}
+    <Box sx={{ width: '100%' }}>  {/* ← Simplified */}
       {/* Header with Refresh */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -299,7 +299,7 @@ const SalesDashboard = () => {
               Here's what's happening with your sales today
             </Typography>
           </Box>
-  
+
           <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.3 }}>
             <IconButton
               onClick={refreshDashboard}
@@ -314,10 +314,14 @@ const SalesDashboard = () => {
           </motion.div>
         </Box>
       </motion.div>
-  
-      {/* Stats Cards - Full Width */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}> {/* ← Responsive spacing */}
-        <Grid item xs={12} sm={6} lg={3}>
+
+      {/* Stats Cards - Full Width with Better Spacing */}
+      <Grid 
+        container 
+        spacing={3}  // ← Increased spacing
+        sx={{ mb: 4 }}
+      >
+        <Grid item xs={12} sm={6} md={6} lg={3}>  {/* ← CHANGED md to 6 */}
           <StatsCard
             title="Meetings This Week"
             value={stats?.totalMeetingsThisWeek || 0}
@@ -327,7 +331,7 @@ const SalesDashboard = () => {
             delay={0}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} md={6} lg={3}>  {/* ← CHANGED md to 6 */}
           <StatsCard
             title="Pending Actions"
             value={stats?.totalActionsPending || 0}
@@ -337,7 +341,7 @@ const SalesDashboard = () => {
             delay={0.1}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} md={6} lg={3}>  {/* ← CHANGED md to 6 */}
           <StatsCard
             title="Total Visits"
             value={stats?.totalVisits || 0}
@@ -347,7 +351,7 @@ const SalesDashboard = () => {
             delay={0.2}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} md={6} lg={3}>  {/* ← CHANGED md to 6 */}
           <StatsCard
             title="Total Expenses"
             value={formatINR(stats?.totalExpenses || 0)}
