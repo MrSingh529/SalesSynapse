@@ -33,7 +33,6 @@ import { useAuth } from '../../context/AuthContext';
 import AIInsights from '../AI/AIInsights';
 import useHaptic from '../../hooks/useHaptic';
 
-// iOS-style Stats Card Component
 const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
   const { impactLight } = useHaptic();
 
@@ -55,6 +54,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
       <Card
         sx={{
           height: '100%',
+          minHeight: '160px', // ← ADD THIS
           background: gradient,
           color: 'white',
           borderRadius: 3,
@@ -83,7 +83,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
           {React.cloneElement(icon, { sx: { fontSize: 150 } })}
         </Box>
 
-        <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+        <CardContent sx={{ position: 'relative', zIndex: 1, p: 3 }}> {/* ← Changed p: 3 */}
           <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
             <Box
               sx={{
@@ -105,8 +105,9 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
             sx={{
               opacity: 0.9,
               fontWeight: 500,
-              mb: 1,
+              mb: 1.5,
               fontSize: '14px',
+              letterSpacing: '0.5px',
             }}
           >
             {title}
@@ -116,7 +117,7 @@ const StatsCard = ({ title, value, icon, color, gradient, delay = 0 }) => {
             variant="h3"
             sx={{
               fontWeight: 700,
-              fontSize: '36px',
+              fontSize: { xs: '28px', sm: '32px', md: '36px' },
               lineHeight: 1.2,
             }}
           >
@@ -276,7 +277,7 @@ const SalesDashboard = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: '100%' }}> {/* ← ADD maxWidth */}
       {/* Header with Refresh */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -298,7 +299,7 @@ const SalesDashboard = () => {
               Here's what's happening with your sales today
             </Typography>
           </Box>
-
+  
           <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.3 }}>
             <IconButton
               onClick={refreshDashboard}
@@ -313,10 +314,10 @@ const SalesDashboard = () => {
           </motion.div>
         </Box>
       </motion.div>
-
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+  
+      {/* Stats Cards - Full Width */}
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}> {/* ← Responsive spacing */}
+        <Grid item xs={12} sm={6} lg={3}>
           <StatsCard
             title="Meetings This Week"
             value={stats?.totalMeetingsThisWeek || 0}
@@ -326,7 +327,7 @@ const SalesDashboard = () => {
             delay={0}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatsCard
             title="Pending Actions"
             value={stats?.totalActionsPending || 0}
@@ -336,7 +337,7 @@ const SalesDashboard = () => {
             delay={0.1}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatsCard
             title="Total Visits"
             value={stats?.totalVisits || 0}
@@ -346,7 +347,7 @@ const SalesDashboard = () => {
             delay={0.2}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatsCard
             title="Total Expenses"
             value={formatINR(stats?.totalExpenses || 0)}
