@@ -529,7 +529,7 @@ main {
 }
 
 .MuiContainer-root {
-  min-height: 400px !important;
+  max-width: 100% !important;
 }
 
 /* Debug borders (remove after fixing) */

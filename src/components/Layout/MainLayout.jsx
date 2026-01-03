@@ -480,11 +480,13 @@ const MainLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: '100%',  // ← CHANGED from calc
+          ml: { sm: `${drawerWidth}px` },  // ← Already correct
           minHeight: '100vh',
           bgcolor: 'background.default',
           display: 'flex',
           flexDirection: 'column',
+          position: 'relative',
         }}
       >
         <Toolbar /> {/* Spacer for AppBar */}
@@ -492,8 +494,9 @@ const MainLayout = () => {
         <Box sx={{ 
           flexGrow: 1, 
           p: { xs: 2, sm: 3 },
-          overflow: 'auto',  // ← ADD THIS
-          maxWidth: '100%',  // ← ADD THIS
+          overflow: 'auto',
+          width: '100%',
+          maxWidth: { xs: '100%', sm: `calc(100vw - ${drawerWidth}px)` },  // ← ADDED
         }}>
           <AnimatePresence mode="wait">
             <motion.div
@@ -503,7 +506,7 @@ const MainLayout = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
-              style={{ width: '100%', minHeight: '100%' }}  // ← UPDATE THIS
+              style={{ width: '100%' }}  // ← SIMPLIFIED
             >
               <Outlet />
             </motion.div>
