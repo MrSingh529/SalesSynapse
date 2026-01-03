@@ -1,641 +1,849 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Box,
-  TextField,
-  Button,
-  Grid,
-  MenuItem,
-  Typography,
   Stepper,
   Step,
   StepLabel,
-  Chip,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Typography,
+  Paper,
   IconButton,
-  InputAdornment,
+  Card,
+  CardContent,
   Divider,
-  Alert,
+  Chip,
 } from '@mui/material';
 import {
-  Business,
-  Person,
-  Description,
+  Add as AddIcon,
+  Delete as DeleteIcon,
   AttachMoney,
-  NavigateNext,
-  NavigateBefore,
-  CheckCircle,
-  LocationOn,
-  Phone,
-  Email,
+  AutoAwesome,
+  Business,
   CalendarToday,
+  Person,
+  Phone,
+  Email as EmailIcon,
 } from '@mui/icons-material';
-import { VISIT_PURPOSES, CUSTOMER_SENTIMENTS, ACTION_ITEM_STATUSES } from '../../utils/constants';
-import useHaptic from '../../hooks/useHaptic';
-
-const steps = ['Customer Info', 'Visit Details', 'Action Items'];
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { SALES_TYPES, SALES_STAGES } from '../../utils/constants';
+import { generateActionableItems } from '../../services/openAIService';
 
 const NewVisitForm = ({ onSubmit, loading }) => {
-  const { impactLight, impactMedium } = useHaptic();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerCompany: '',
-    customerEmail: '',
-    customerPhone: '',
-    location: '',
-    visitDate: new Date().toISOString().split('T')[0],
-    visitPurpose: '',
-    discussionPoints: '',
-    customerSentiment: '',
-    actionItems: '',
-    followUpDate: '',
-    expenses: '',
-    expenseDetails: '',
+    // Step 1: Visit Details
+    companyName: '',
+    visitDate: new Date(),
+    objective: '',
+    outcome: '',
+    leadName: '',
+    estimatedBudget: '',
+
+    // Step 2: Sales Data
+    salesType: '',
+    salesStage: '',
+
+    // Step 3: Notes & Actions
+    discussionDetails: '',
+    actionable: [{ task: '', completed: false }],
+    additionalNotes: '',
+
+    // Step 4: Contact Details & Expenses
+    contacts: [
+      {
+        name: '',
+        designation: '',
+        mobile: '',
+        email: '',
+        isPrimary: true,
+      },
+    ],
+    expenses: {
+      travel: 0,
+      food: 0,
+      accommodation: 0,
+      miscellaneous: 0,
+    },
   });
 
-  const [errors, setErrors] = useState({});
+  const steps = ['Visit Details', 'Sales Data', 'Notes & Actions', 'Contact Details & Expenses'];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateStep = (step) => {
-    const newErrors = {};
-
-    if (step === 0) {
-      if (!formData.customerName.trim()) newErrors.customerName = 'Customer name is required';
-      if (!formData.customerCompany.trim()) newErrors.customerCompany = 'Company is required';
-      if (!formData.location.trim()) newErrors.location = 'Location is required';
-    }
-
-    if (step === 1) {
-      if (!formData.visitDate) newErrors.visitDate = 'Visit date is required';
-      if (!formData.visitPurpose) newErrors.visitPurpose = 'Visit purpose is required';
-      if (!formData.discussionPoints.trim()) newErrors.discussionPoints = 'Discussion points are required';
-      if (!formData.customerSentiment) newErrors.customerSentiment = 'Customer sentiment is required';
-    }
-
-    if (step === 2) {
-      if (!formData.actionItems.trim()) newErrors.actionItems = 'Action items are required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // Calculate total expenses
+  const totalExpenses = Object.values(formData.expenses).reduce((sum, value) => {
+    return sum + (parseFloat(value) || 0);
+  }, 0);
 
   const handleNext = () => {
-    if (validateStep(activeStep)) {
-      impactLight();
-      setActiveStep((prev) => prev + 1);
+    if (activeStep === steps.length - 1) {
+      handleSubmit();
     } else {
-      impactMedium();
+      setActiveStep((prevStep) => prevStep + 1);
     }
   };
 
   const handleBack = () => {
-    impactLight();
-    setActiveStep((prev) => prev - 1);
+    setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateStep(activeStep)) {
-      impactMedium();
-      onSubmit(formData);
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleExpenseChange = (category, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      expenses: {
+        ...prev.expenses,
+        [category]: parseFloat(value) || 0,
+      },
+    }));
+  };
+
+  const handleContactChange = (index, field, value) => {
+    const updatedContacts = [...formData.contacts];
+    updatedContacts[index] = { ...updatedContacts[index], [field]: value };
+    setFormData((prev) => ({ ...prev, contacts: updatedContacts }));
+  };
+
+  const addContact = () => {
+    setFormData((prev) => ({
+      ...prev,
+      contacts: [
+        ...prev.contacts,
+        {
+          name: '',
+          designation: '',
+          mobile: '',
+          email: '',
+          isPrimary: false,
+        },
+      ],
+    }));
+  };
+
+  const removeContact = (index) => {
+    if (formData.contacts.length > 1) {
+      const updatedContacts = formData.contacts.filter((_, i) => i !== index);
+      setFormData((prev) => ({ ...prev, contacts: updatedContacts }));
     }
   };
 
-  const stepVariants = {
-    hidden: { opacity: 0, x: 50 },
-    visible: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -50 },
+  const handleActionableChange = (index, value) => {
+    const updatedActionable = [...formData.actionable];
+    updatedActionable[index] = { task: value, completed: false };
+    setFormData((prev) => ({ ...prev, actionable: updatedActionable }));
   };
 
-  return (
-    <Box component="form" onSubmit={handleSubmit}>
-      {/* iOS-style Stepper */}
+  const addActionable = () => {
+    setFormData((prev) => ({
+      ...prev,
+      actionable: [...prev.actionable, { task: '', completed: false }],
+    }));
+  };
+
+  const removeActionable = (index) => {
+    if (formData.actionable.length > 1) {
+      const updatedActionable = formData.actionable.filter((_, i) => i !== index);
+      setFormData((prev) => ({ ...prev, actionable: updatedActionable }));
+    }
+  };
+
+  // AI Suggestions Handler
+  const handleAISuggestions = async () => {
+    if (!process.env.REACT_APP_OPENAI_API_KEY) {
+      alert('OpenAI API key not configured. Please add REACT_APP_OPENAI_API_KEY to your .env file.');
+      return;
+    }
+
+    if (!formData.companyName || !formData.objective) {
+      alert('Please enter company name and meeting objective to get relevant AI suggestions.');
+      return;
+    }
+
+    try {
+      const aiItems = await generateActionableItems(formData);
+
+      if (aiItems && aiItems.length > 0) {
+        const updatedActionable = [
+          ...formData.actionable.filter((item) => item.task.trim() !== ''),
+          ...aiItems,
+        ];
+        setFormData((prev) => ({ ...prev, actionable: updatedActionable }));
+
+        alert(`Added ${aiItems.length} AI-generated action items! Review and edit them as needed.`);
+      } else {
+        alert('No actionable items were suggested by AI. Try adding more details to the objective.');
+      }
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+      alert('Unable to get AI suggestions. Please check your connection and try again.');
+    }
+  };
+
+  const handleSubmit = () => {
+    const filteredActionable = formData.actionable.filter((item) => item.task.trim() !== '');
+    const filteredContacts = formData.contacts.filter(
+      (contact) => contact.name.trim() !== '' || contact.email.trim() !== ''
+    );
+
+    const submissionData = {
+      ...formData,
+      actionable: filteredActionable,
+      contacts: filteredContacts,
+      estimatedBudget: parseFloat(formData.estimatedBudget) || 0,
+      totalExpenses: totalExpenses,
+      visitDate:
+        formData.visitDate instanceof Date ? formData.visitDate : new Date(formData.visitDate),
+    };
+
+    onSubmit(submissionData);
+  };
+
+  // Step 1: Visit Details
+  const renderStep1 = () => (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Stepper
-          activeStep={activeStep}
-          sx={{
-            mb: 4,
-            '& .MuiStepLabel-root .Mui-completed': {
-              color: 'success.main',
-            },
-            '& .MuiStepLabel-root .Mui-active': {
-              color: 'primary.main',
-            },
-          }}
-        >
-          {steps.map((label, index) => (
-            <Step key={label}>
-              <StepLabel
-                StepIconComponent={() => (
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor:
-                        activeStep > index
-                          ? 'success.main'
-                          : activeStep === index
-                          ? 'primary.main'
-                          : 'grey.300',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {activeStep > index ? <CheckCircle sx={{ fontSize: 20 }} /> : index + 1}
-                  </Box>
-                )}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    fontWeight: activeStep === index ? 600 : 400,
-                  }}
-                >
-                  {label}
-                </Typography>
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </motion.div>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Company Name"
+              value={formData.companyName}
+              onChange={(e) => handleChange('companyName', e.target.value)}
+              required
+              InputProps={{
+                startAdornment: <Business sx={{ mr: 1, color: 'text.secondary' }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Grid>
 
-      {/* Progress Bar */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Step {activeStep + 1} of {steps.length}
-          </Typography>
-          <Typography variant="body2" color="primary.main" fontWeight={600}>
-            {Math.round(((activeStep + 1) / steps.length) * 100)}% Complete
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            height: 6,
-            borderRadius: 3,
-            bgcolor: 'grey.200',
-            overflow: 'hidden',
-          }}
-        >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, #007AFF 0%, #5AC8FA 100%)',
+          <Grid item xs={12} sm={6}>
+            <DatePicker
+              label="Visit Date"
+              value={formData.visitDate}
+              onChange={(date) => handleChange('visitDate', date)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  required: true,
+                  InputProps: {
+                    startAdornment: <CalendarToday sx={{ mr: 1, color: 'text.secondary' }} />,
+                  },
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  },
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Lead Name"
+              value={formData.leadName}
+              onChange={(e) => handleChange('leadName', e.target.value)}
+              required
+              InputProps={{
+                startAdornment: <Person sx={{ mr: 1, color: 'text.secondary' }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Meeting Objective/Agenda"
+              multiline
+              rows={3}
+              value={formData.objective}
+              onChange={(e) => handleChange('objective', e.target.value)}
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Outcome"
+              multiline
+              rows={3}
+              value={formData.outcome}
+              onChange={(e) => handleChange('outcome', e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Budget Estimation (in ₹)"
+              type="number"
+              value={formData.estimatedBudget}
+              onChange={(e) => handleChange('estimatedBudget', e.target.value)}
+              InputProps={{
+                startAdornment: <AttachMoney sx={{ mr: 1, color: 'text.secondary' }} />,
+              }}
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Grid>
+        </Grid>
+      </motion.div>
+    </LocalizationProvider>
+  );
+
+  // Step 2: Sales Data
+  const renderStep2 = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <FormControl
+            fullWidth
+            required
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              },
+            }}
+          >
+            <InputLabel>Sales Type</InputLabel>
+            <Select
+              value={formData.salesType}
+              label="Sales Type"
+              onChange={(e) => handleChange('salesType', e.target.value)}
+            >
+              <MenuItem value="">Select Type</MenuItem>
+              {SALES_TYPES.map((type) => (
+                <MenuItem key={type.value} value={type.value}>
+                  {type.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <FormControl
+            fullWidth
+            required
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              },
+            }}
+          >
+            <InputLabel>Sales Stage</InputLabel>
+            <Select
+              value={formData.salesStage}
+              label="Sales Stage"
+              onChange={(e) => handleChange('salesStage', e.target.value)}
+            >
+              <MenuItem value="">Select Stage</MenuItem>
+              {SALES_STAGES.map((stage) => (
+                <MenuItem key={stage.value} value={stage.value}>
+                  {stage.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+    </motion.div>
+  );
+
+  // Step 3: Notes & Actions (with AI button)
+  const renderStep3 = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Discussion Details (Optional)"
+            multiline
+            rows={4}
+            value={formData.discussionDetails}
+            onChange={(e) => handleChange('discussionDetails', e.target.value)}
+            placeholder="Any additional discussion points..."
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              },
             }}
           />
-        </Box>
-      </Box>
+        </Grid>
 
-      <AnimatePresence mode="wait">
-        {/* Step 1: Customer Info */}
-        {activeStep === 0 && (
-          <motion.div
-            key="step1"
-            variants={stepVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.3 }}
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Actionable Points
+            </Typography>
+            <Chip label={`${formData.actionable.length} items`} color="primary" size="small" />
+          </Box>
+
+          {/* AI Suggestions Button */}
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, rgba(175, 82, 222, 0.05) 0%, rgba(90, 200, 250, 0.05) 100%)',
+              border: 1,
+              borderColor: 'divider',
+            }}
           >
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                bgcolor: 'rgba(0, 122, 255, 0.03)',
-                border: 1,
-                borderColor: 'primary.light',
-                mb: 3,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Business sx={{ color: 'primary.main', mr: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  Customer Information
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Enter the basic details of the customer you met
-              </Typography>
-            </Box>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Customer Name"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  error={!!errors.customerName}
-                  helperText={errors.customerName}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  startIcon={<AutoAwesome />}
+                  onClick={handleAISuggestions}
+                  variant="contained"
+                  size="medium"
                   disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person color="primary" />
-                      </InputAdornment>
-                    ),
+                  sx={{
+                    borderRadius: 2,
+                    background: 'linear-gradient(135deg, #AF52DE 0%, #5AC8FA 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #9F42CE 0%, #4AB8EA 100%)',
+                    },
                   }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Company Name"
-                  name="customerCompany"
-                  value={formData.customerCompany}
-                  onChange={handleChange}
-                  error={!!errors.customerCompany}
-                  helperText={errors.customerCompany}
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Business color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="customerEmail"
-                  type="email"
-                  value={formData.customerEmail}
-                  onChange={handleChange}
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="customerPhone"
-                  value={formData.customerPhone}
-                  onChange={handleChange}
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Phone color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Meeting Location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  error={!!errors.location}
-                  helperText={errors.location}
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOn color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  placeholder="e.g., Customer Office, Coffee Shop, Virtual Meeting"
-                />
-              </Grid>
-            </Grid>
-          </motion.div>
-        )}
-
-        {/* Step 2: Visit Details */}
-        {activeStep === 1 && (
-          <motion.div
-            key="step2"
-            variants={stepVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.3 }}
-          >
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                bgcolor: 'rgba(52, 199, 89, 0.03)',
-                border: 1,
-                borderColor: 'success.light',
-                mb: 3,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Description sx={{ color: 'success.main', mr: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  Visit Details
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Provide details about your meeting and discussion
-              </Typography>
-            </Box>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Visit Date"
-                  name="visitDate"
-                  type="date"
-                  value={formData.visitDate}
-                  onChange={handleChange}
-                  error={!!errors.visitDate}
-                  helperText={errors.visitDate}
-                  disabled={loading}
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarToday color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  select
-                  fullWidth
-                  label="Visit Purpose"
-                  name="visitPurpose"
-                  value={formData.visitPurpose}
-                  onChange={handleChange}
-                  error={!!errors.visitPurpose}
-                  helperText={errors.visitPurpose}
-                  disabled={loading}
                 >
-                  {VISIT_PURPOSES.map((purpose) => (
-                    <MenuItem key={purpose} value={purpose}>
-                      {purpose}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Discussion Points"
-                  name="discussionPoints"
-                  value={formData.discussionPoints}
-                  onChange={handleChange}
-                  error={!!errors.discussionPoints}
-                  helperText={errors.discussionPoints || 'Describe what was discussed during the meeting'}
-                  disabled={loading}
-                  placeholder="Key topics discussed, customer concerns, product demonstrations..."
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  select
-                  fullWidth
-                  label="Customer Sentiment"
-                  name="customerSentiment"
-                  value={formData.customerSentiment}
-                  onChange={handleChange}
-                  error={!!errors.customerSentiment}
-                  helperText={errors.customerSentiment || 'How did the customer respond?'}
-                  disabled={loading}
-                >
-                  {CUSTOMER_SENTIMENTS.map((sentiment) => (
-                    <MenuItem key={sentiment} value={sentiment}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            bgcolor:
-                              sentiment === 'Positive'
-                                ? 'success.main'
-                                : sentiment === 'Neutral'
-                                ? 'warning.main'
-                                : 'error.main',
-                          }}
-                        />
-                        {sentiment}
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            </Grid>
-          </motion.div>
-        )}
-
-        {/* Step 3: Action Items */}
-        {activeStep === 2 && (
-          <motion.div
-            key="step3"
-            variants={stepVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.3 }}
-          >
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                bgcolor: 'rgba(255, 149, 0, 0.03)',
-                border: 1,
-                borderColor: 'warning.light',
-                mb: 3,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CheckCircle sx={{ color: 'warning.main', mr: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  Action Items & Follow-up
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Define next steps and track expenses
+                  Get AI Suggestions
+                </Button>
+              </motion.div>
+              <Typography variant="caption" color="text.secondary">
+                Let AI suggest action items based on your visit details
               </Typography>
             </Box>
+          </Paper>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Action Items"
-                  name="actionItems"
-                  value={formData.actionItems}
-                  onChange={handleChange}
-                  error={!!errors.actionItems}
-                  helperText={errors.actionItems || 'List all follow-up tasks (one per line)'}
-                  disabled={loading}
-                  placeholder="- Send product brochure&#10;- Schedule demo call&#10;- Follow up on pricing"
-                />
-              </Grid>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              mb: 2,
+              borderRadius: 2,
+            }}
+          >
+            {formData.actionable.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+                  <TextField
+                    fullWidth
+                    label={`Actionable Point ${index + 1}`}
+                    value={item.task}
+                    onChange={(e) => handleActionableChange(index, e.target.value)}
+                    placeholder="Enter actionable item..."
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <IconButton
+                      onClick={() => removeActionable(index)}
+                      disabled={formData.actionable.length === 1}
+                      size="small"
+                      sx={{
+                        bgcolor: 'error.lighter',
+                        '&:hover': { bgcolor: 'error.light' },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </motion.div>
+                </Box>
+              </motion.div>
+            ))}
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button
+                startIcon={<AddIcon />}
+                onClick={addActionable}
+                variant="outlined"
+                fullWidth
+                sx={{ mt: 1, borderRadius: 2 }}
+              >
+                Add Actionable Point
+              </Button>
+            </motion.div>
+          </Paper>
+        </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Follow-up Date"
-                  name="followUpDate"
-                  type="date"
-                  value={formData.followUpDate}
-                  onChange={handleChange}
-                  disabled={loading}
-                  InputLabelProps={{ shrink: true }}
-                  helperText="When should you follow up?"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarToday color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Additional Notes"
+            multiline
+            rows={3}
+            value={formData.additionalNotes}
+            onChange={(e) => handleChange('additionalNotes', e.target.value)}
+            placeholder="Any other notes..."
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              },
+            }}
+          />
+        </Grid>
+      </Grid>
+    </motion.div>
+  );
 
-              <Grid item xs={12} sm={6}>
+  // Step 4: Contact Details & Expenses
+  const renderStep4 = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Grid container spacing={3}>
+        {/* Contact Details Section */}
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Contact Details
+            </Typography>
+            <Chip label={`${formData.contacts.length} contacts`} color="primary" size="small" />
+          </Box>
+
+          {formData.contacts.map((contact, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card variant="outlined" sx={{ mb: 2, borderRadius: 2 }}>
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      Contact {index + 1} {contact.isPrimary && <Chip label="Primary" size="small" color="success" sx={{ ml: 1 }} />}
+                    </Typography>
+                    {formData.contacts.length > 1 && (
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton onClick={() => removeContact(index)} size="small">
+                          <DeleteIcon />
+                        </IconButton>
+                      </motion.div>
+                    )}
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Name *"
+                        value={contact.name}
+                        onChange={(e) => handleContactChange(index, 'name', e.target.value)}
+                        required={contact.isPrimary}
+                        InputProps={{
+                          startAdornment: <Person sx={{ mr: 1, color: 'text.secondary' }} />,
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Designation"
+                        value={contact.designation}
+                        onChange={(e) => handleContactChange(index, 'designation', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Mobile"
+                        type="tel"
+                        value={contact.mobile}
+                        onChange={(e) => handleContactChange(index, 'mobile', e.target.value)}
+                        InputProps={{
+                          startAdornment: <Phone sx={{ mr: 1, color: 'text.secondary' }} />,
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Email"
+                        type="email"
+                        value={contact.email}
+                        onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                        required={contact.isPrimary}
+                        InputProps={{
+                          startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={addContact}
+              variant="outlined"
+              sx={{ mt: 1, borderRadius: 2 }}
+            >
+              Add Another Contact
+            </Button>
+          </motion.div>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Divider sx={{ my: 3 }} />
+        </Grid>
+
+        {/* Expenses Section */}
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+            Expenses (in ₹)
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              borderRadius: 2,
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
-                  label="Expenses (₹)"
-                  name="expenses"
+                  label="Travel"
                   type="number"
-                  value={formData.expenses}
-                  onChange={handleChange}
-                  disabled={loading}
+                  value={formData.expenses.travel}
+                  onChange={(e) => handleExpenseChange('travel', e.target.value)}
                   InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <AttachMoney color="primary" />
-                      </InputAdornment>
-                    ),
+                    startAdornment: '₹',
                   }}
-                  helperText="Travel, meals, etc."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="Food"
+                  type="number"
+                  value={formData.expenses.food}
+                  onChange={(e) => handleExpenseChange('food', e.target.value)}
+                  InputProps={{
+                    startAdornment: '₹',
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="Accommodation"
+                  type="number"
+                  value={formData.expenses.accommodation}
+                  onChange={(e) => handleExpenseChange('accommodation', e.target.value)}
+                  InputProps={{
+                    startAdornment: '₹',
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="Miscellaneous"
+                  type="number"
+                  value={formData.expenses.miscellaneous}
+                  onChange={(e) => handleExpenseChange('miscellaneous', e.target.value)}
+                  InputProps={{
+                    startAdornment: '₹',
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={2}
-                  label="Expense Details"
-                  name="expenseDetails"
-                  value={formData.expenseDetails}
-                  onChange={handleChange}
-                  disabled={loading}
-                  placeholder="Breakdown of expenses incurred"
-                />
+                <Divider sx={{ my: 2 }} />
+                <motion.div whileHover={{ scale: 1.01 }} transition={{ type: 'spring', stiffness: 300 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      p: 3,
+                      background: 'linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)',
+                      color: 'white',
+                      borderRadius: 2,
+                      boxShadow: '0 4px 12px rgba(0, 122, 255, 0.3)',
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Total Expenses:
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                      ₹{totalExpenses.toFixed(2)}
+                    </Typography>
+                  </Box>
+                </motion.div>
               </Grid>
             </Grid>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </Paper>
+        </Grid>
+      </Grid>
+    </motion.div>
+  );
 
-      <Divider sx={{ my: 3 }} />
+  return (
+    <Box>
+      <Stepper
+        activeStep={activeStep}
+        sx={{
+          mb: 4,
+          '& .MuiStepLabel-root .Mui-completed': {
+            color: 'success.main',
+          },
+          '& .MuiStepLabel-root .Mui-active': {
+            color: 'primary.main',
+          },
+        }}
+      >
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
-      {/* Navigation Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+      {activeStep === 0 && renderStep1()}
+      {activeStep === 1 && renderStep2()}
+      {activeStep === 2 && renderStep3()}
+      {activeStep === 3 && renderStep4()}
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, gap: 2 }}>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
-            variant="outlined"
+            disabled={activeStep === 0}
             onClick={handleBack}
-            disabled={activeStep === 0 || loading}
-            startIcon={<NavigateBefore />}
-            sx={{ px: 3 }}
+            variant="outlined"
+            size="large"
+            sx={{ borderRadius: 2, minWidth: 120 }}
           >
             Back
           </Button>
         </motion.div>
-
-        {activeStep === steps.length - 1 ? (
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading}
-              endIcon={<CheckCircle />}
-              sx={{
-                px: 4,
-                background: 'linear-gradient(135deg, #34C759 0%, #66D77C 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #2DA44E 0%, #34C759 100%)',
-                },
-              }}
-            >
-              {loading ? 'Submitting...' : 'Submit Visit'}
-            </Button>
-          </motion.div>
-        ) : (
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              variant="contained"
-              onClick={handleNext}
-              disabled={loading}
-              endIcon={<NavigateNext />}
-              sx={{ px: 3 }}
-            >
-              Next
-            </Button>
-          </motion.div>
-        )}
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            disabled={loading}
+            size="large"
+            sx={{
+              borderRadius: 2,
+              minWidth: 120,
+              background: 'linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #0066DD 0%, #4AB8EA 100%)',
+              },
+            }}
+          >
+            {activeStep === steps.length - 1 ? 'Submit Visit' : 'Next'}
+          </Button>
+        </motion.div>
       </Box>
     </Box>
   );

@@ -531,13 +531,3 @@ main {
 .MuiContainer-root {
   max-width: 100% !important;
 }
-
-/* Debug borders (remove after fixing) */
- 
-main {
-  border: 2px solid red !important;
-}
-
-.MuiContainer-root {
-  border: 2px solid blue !important;
-}
