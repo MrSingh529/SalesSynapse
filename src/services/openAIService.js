@@ -5,7 +5,7 @@ let openai;
 try {
   openai = new OpenAI({
     apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true
+    dangerouslyAllowBrowser: true,
   });
 } catch (error) {
   console.error('Failed to initialize OpenAI:', error);
@@ -21,8 +21,16 @@ export const generateVisitInsights = async (visitData, userRole = 'sales') => {
   }
 
   try {
-    const { companyName, objective, outcome, discussionDetails, salesStage, salesType, estimatedBudget } = visitData;
-    
+    const {
+      companyName,
+      objective,
+      outcome,
+      discussionDetails,
+      salesStage,
+      salesType,
+      estimatedBudget,
+    } = visitData;
+
     const prompt = `
       Analyze this sales visit and provide structured insights for the ${userRole}:
       
@@ -47,29 +55,30 @@ export const generateVisitInsights = async (visitData, userRole = 'sales') => {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
-          content: "You are a sales strategy expert. Provide structured, actionable insights in JSON format."
+          role: 'system',
+          content:
+            'You are a sales strategy expert. Provide structured, actionable insights in JSON format.',
         },
         {
-          role: "user",
-          content: prompt
-        }
+          role: 'user',
+          content: prompt,
+        },
       ],
       temperature: 0.7,
-      max_tokens: 800
+      max_tokens: 800,
     });
 
     const content = response.choices[0]?.message?.content;
-    
+
     try {
       const parsedInsights = JSON.parse(content);
       return {
         ...parsedInsights,
         generatedAt: new Date().toISOString(),
-        forRole: userRole
+        forRole: userRole,
       };
     } catch (e) {
       // Fallback if JSON parsing fails
@@ -80,12 +89,85 @@ export const generateVisitInsights = async (visitData, userRole = 'sales') => {
         risks: [],
         opportunities: [],
         generatedAt: new Date().toISOString(),
-        forRole: userRole
+        forRole: userRole,
       };
     }
   } catch (error) {
     console.error('Error generating AI insights:', error);
     throw new Error('Failed to generate AI insights');
+  }
+};
+
+/**
+ * Generate AI insights (backward compatibility wrapper for AIInsights component)
+ */
+export const generateAIInsights = async (visitData, userRole = 'sales') => {
+  if (!openai || !process.env.REACT_APP_OPENAI_API_KEY) {
+    return {
+      success: false,
+      error: 'AI insights are currently unavailable. Please configure your OpenAI API key.',
+    };
+  }
+
+  try {
+    const {
+      customerName,
+      customerCompany,
+      visitPurpose,
+      discussionPoints,
+      customerSentiment,
+      actionItems,
+      expenses,
+    } = visitData;
+
+    const prompt = `
+Analyze this sales visit and provide actionable insights for a ${userRole}:
+
+Customer: ${customerName || 'Not specified'}
+Company: ${customerCompany || 'Not specified'}
+Visit Purpose: ${visitPurpose || 'Not specified'}
+Discussion: ${discussionPoints || 'Not specified'}
+Customer Sentiment: ${customerSentiment || 'Not specified'}
+Action Items: ${actionItems || 'Not specified'}
+Expenses: ₹${expenses || 0}
+
+Provide a brief, actionable summary with:
+1. Key insights from the meeting
+2. Recommendations for next steps
+3. Potential opportunities or risks
+
+Keep it concise (max 150 words) and focused on practical advice.
+`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a sales strategy expert. Provide concise, actionable insights for sales professionals.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+    });
+
+    const insights = response.choices[0]?.message?.content || 'No insights generated';
+
+    return {
+      success: true,
+      insights,
+    };
+  } catch (error) {
+    console.error('Error generating AI insights:', error);
+    return {
+      success: false,
+      error: 'Failed to generate AI insights. Please try again later.',
+    };
   }
 };
 
@@ -99,7 +181,7 @@ export const generateStrategyRecommendations = async (visitData) => {
 
   try {
     const { companyName, salesStage, estimatedBudget, salesType } = visitData;
-    
+
     const prompt = `
       As a sales strategy expert, provide structured recommendations for advancing this deal:
       
@@ -121,38 +203,38 @@ export const generateStrategyRecommendations = async (visitData) => {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
-          content: "Provide strategic sales recommendations in structured JSON format."
+          role: 'system',
+          content: 'Provide strategic sales recommendations in structured JSON format.',
         },
         {
-          role: "user",
-          content: prompt
-        }
+          role: 'user',
+          content: prompt,
+        },
       ],
       temperature: 0.7,
-      max_tokens: 600
+      max_tokens: 600,
     });
 
     const content = response.choices[0]?.message?.content;
-    
+
     try {
       const parsedStrategy = JSON.parse(content);
       return {
         ...parsedStrategy,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
       };
     } catch (e) {
       // Fallback
       return {
-        immediateSteps: ["Follow up within 48 hours", "Prepare tailored materials"],
-        mediumTermStrategy: ["Deepen stakeholder engagement", "Refine proposal"],
-        longTermRelationship: ["Establish regular check-ins", "Provide value-added content"],
-        riskFactors: ["Budget constraints", "Competition", "Decision delays"],
-        upsellOpportunities: ["Additional services", "Extended support"],
-        generatedAt: new Date().toISOString()
+        immediateSteps: ['Follow up within 48 hours', 'Prepare tailored materials'],
+        mediumTermStrategy: ['Deepen stakeholder engagement', 'Refine proposal'],
+        longTermRelationship: ['Establish regular check-ins', 'Provide value-added content'],
+        riskFactors: ['Budget constraints', 'Competition', 'Decision delays'],
+        upsellOpportunities: ['Additional services', 'Extended support'],
+        generatedAt: new Date().toISOString(),
       };
     }
   } catch (error) {
@@ -171,7 +253,7 @@ export const generateActionableItems = async (visitData, userRole = 'sales') => 
 
   try {
     const { companyName, objective, outcome, discussionDetails, salesStage } = visitData;
-    
+
     const prompt = `
       Based on this sales visit, generate specific, actionable items for the ${userRole}:
       Company: ${companyName || 'Client'}
@@ -190,29 +272,29 @@ export const generateActionableItems = async (visitData, userRole = 'sales') => 
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
-          content: "Generate specific, actionable sales tasks in JSON format."
+          role: 'system',
+          content: 'Generate specific, actionable sales tasks in JSON format.',
         },
         {
-          role: "user",
-          content: prompt
-        }
+          role: 'user',
+          content: prompt,
+        },
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 500,
     });
 
     const content = response.choices[0]?.message?.content;
-    
+
     try {
       const items = JSON.parse(content);
-      return items.map(item => ({
+      return items.map((item) => ({
         ...item,
         completed: false,
-        id: Date.now() + Math.random()
+        id: Date.now() + Math.random(),
       }));
     } catch (e) {
       // Fallback
@@ -223,7 +305,7 @@ export const generateActionableItems = async (visitData, userRole = 'sales') => 
           estimatedTime: '2 days',
           category: 'follow-up',
           completed: false,
-          id: Date.now() + 1
+          id: Date.now() + 1,
         },
         {
           task: 'Document meeting minutes and key decisions',
@@ -231,7 +313,7 @@ export const generateActionableItems = async (visitData, userRole = 'sales') => 
           estimatedTime: '1 day',
           category: 'documentation',
           completed: false,
-          id: Date.now() + 2
+          id: Date.now() + 2,
         },
         {
           task: 'Prepare next steps presentation',
@@ -239,8 +321,8 @@ export const generateActionableItems = async (visitData, userRole = 'sales') => 
           estimatedTime: '3 days',
           category: 'documentation',
           completed: false,
-          id: Date.now() + 3
-        }
+          id: Date.now() + 3,
+        },
       ];
     }
   } catch (error) {
@@ -257,14 +339,16 @@ export const testOpenAIConnection = async () => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: "Say 'Connected successfully' if you can read this." }],
-      max_tokens: 10
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'user', content: "Say 'Connected successfully' if you can read this." },
+      ],
+      max_tokens: 10,
     });
-    
-    return { 
-      connected: true, 
-      message: response.choices[0]?.message?.content || 'Connected' 
+
+    return {
+      connected: true,
+      message: response.choices[0]?.message?.content || 'Connected',
     };
   } catch (error) {
     return { connected: false, message: error.message };
