@@ -9,11 +9,14 @@ const Dashboard = () => {
   const { userData } = useAuth();
   const isManager = userData?.role === 'manager';
 
+  console.log('Dashboard rendering:', { userData, isManager }); // ← ADD THIS
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
+      style={{ width: '100%', minHeight: '500px' }} // ← ADD THIS
     >
       <Container maxWidth="xl" sx={{ py: 2 }}>
         {isManager ? <ManagerDashboard /> : <SalesDashboard />}

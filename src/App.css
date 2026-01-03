@@ -521,3 +521,23 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* Ensure content visibility */
+main {
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.MuiContainer-root {
+  min-height: 400px !important;
+}
+
+/* Debug borders (remove after fixing) */
+ 
+main {
+  border: 2px solid red !important;
+}
+
+.MuiContainer-root {
+  border: 2px solid blue !important;
+}

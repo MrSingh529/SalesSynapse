@@ -21,6 +21,8 @@ const NewVisit = () => {
   const navigate = useNavigate();
   const { notificationSuccess, notificationError } = useHaptic();
   
+  console.log('NewVisit rendering:', { user });
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');

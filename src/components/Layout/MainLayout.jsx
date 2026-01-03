@@ -489,7 +489,12 @@ const MainLayout = () => {
       >
         <Toolbar /> {/* Spacer for AppBar */}
 
-        <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ 
+          flexGrow: 1, 
+          p: { xs: 2, sm: 3 },
+          overflow: 'auto',  // ← ADD THIS
+          maxWidth: '100%',  // ← ADD THIS
+        }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -498,7 +503,7 @@ const MainLayout = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '100%', minHeight: '100%' }}  // ← UPDATE THIS
             >
               <Outlet />
             </motion.div>
