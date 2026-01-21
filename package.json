@@ -19,8 +19,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#007AFF",
-  "background_color": "#FFFFFF",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
   "orientation": "portrait-primary",
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -30,7 +30,6 @@
     "@mui/x-date-pickers": "^8.23.0",
     "date-fns": "^4.1.0",
     "firebase": "^10.8.0",
-    "framer-motion": "^11.18.2",
     "openai": "^4.28.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

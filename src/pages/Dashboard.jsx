@@ -1,27 +1,19 @@
-import React from 'react';
-import { Container } from '@mui/material';
-import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
-import SalesDashboard from '../components/Dashboard/SalesDashboard';
-import ManagerDashboard from '../components/Dashboard/ManagerDashboard';
+import React from "react";
+import { Container } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
+import SalesDashboard from "../components/Dashboard/SalesDashboard";
+import ManagerDashboard from "../components/Dashboard/ManagerDashboard";
 
 const Dashboard = () => {
-  const { userData } = useAuth();
-  const isManager = userData?.role === 'manager';
+  const { user, userData } = useAuth(); // userData is now in useAuth
 
-  console.log('Dashboard rendering:', { userData, isManager }); // ← ADD THIS
+  // Check if user is manager based on role in Firestore
 
+  const isManager = userData?.role === "manager";
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      style={{ width: '100%', minHeight: '500px' }} // ← ADD THIS
-    >
-      <Container maxWidth="xl" sx={{ py: 2 }}>
-        {isManager ? <ManagerDashboard /> : <SalesDashboard />}
-      </Container>
-    </motion.div>
+    <Container maxWidth="xl">
+      {isManager ? <ManagerDashboard /> : <SalesDashboard />}
+    </Container>
   );
 };
 
