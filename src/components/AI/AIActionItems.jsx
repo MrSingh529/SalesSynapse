@@ -88,9 +88,8 @@ const AIActionItems = ({ visitData, userRole = 'sales', onItemsGenerated, showTi
   };
   const addSelectedToVisit = () => {
     const selected = aiActions.filter(item => selectedItems.includes(item.id));
-    // You can pass this to parent component or handle directly
     console.log('Selected AI items:', selected);
-    alert${selected.length} items selected. Implement integration with visit form.);
+    alert(`${selected.length} items selected. Implement integration with visit form.`);
   };
   const getPriorityIcon = (priority) => {
     switch (priority) {
