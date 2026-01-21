@@ -334,7 +334,7 @@ const NewVisitForm = ({ onSubmit, loading }) => {
             <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
               <TextField
                 fullWidth
-                label=Actionable Point ${index + 1}}
+                label={`Actionable Point ${index + 1}`}
                 value={item.task}
                 onChange={(e) => handleActionableChange(index, e.target.value)}
                 placeholder="Enter actionable item..."

@@ -879,7 +879,7 @@ const VisitReport = ({ isManager = false }) => {
                                         primary={
                                           <Typography variant={isMobile ? "body2" : "body1"}>
                                             {item.task.length > (isMobile ? 40 : 60) 
-                                              ? ${item.task.substring(0, isMobile ? 40 : 60)}... 
+                                              ? `${item.task.substring(0, isMobile ? 40 : 60)}...` 
                                               : item.task}
                                           </Typography>
                                         }
