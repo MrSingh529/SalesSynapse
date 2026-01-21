@@ -1,28 +1,15 @@
 import React from 'react';
 import { Container } from '@mui/material';
-import { motion } from 'framer-motion';
 import VisitReport from '../components/Visits/VisitReport';
-import { useAuth } from '../context/AuthContext';
-
+import { useAuth } from '../context/AuthContext'; // Changed from '../hooks/useAuth'
 const VisitReports = () => {
-  const { userData } = useAuth();
+  const { user, userData } = useAuth(); // userData is now in useAuth
+  
   const isManager = userData?.role === 'manager';
-
-  console.log('VisitReports rendering:', { userData, isManager }); // ← ADD THIS
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      style={{ width: '100%', minHeight: '500px' }} // ← ADD THIS
-    >
-      <Container maxWidth="xl">
-        <VisitReport isManager={isManager} />
-      </Container>
-    </motion.div>
+    <Container maxWidth="xl">
+      <VisitReport isManager={isManager} />
+    </Container>
   );
 };
-
-
 export default VisitReports;
