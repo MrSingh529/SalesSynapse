@@ -137,20 +137,20 @@ const NewVisitForm = ({ onSubmit, loading }) => {
       alert('OpenAI API key not configured. Please add REACT_APP_OPENAI_API_KEY to your .env file.');
       return;
     }
-
+  
     if (!formData.companyName || !formData.objective) {
       alert('Please enter company name and meeting objective to get relevant AI suggestions.');
       return;
     }
-
+  
     try {
       const aiItems = await generateActionableItems(formData);
-
+  
       if (aiItems && aiItems.length > 0) {
         const updatedActionable = [...formData.actionable.filter(item => item.task.trim() !== ''), ...aiItems];
         setFormData(prev => ({ ...prev, actionable: updatedActionable }));
-
-        alertAdded ${aiItems.length} AI-generated action items! Review and edit them as needed.);
+  
+        alert(`Added ${aiItems.length} AI-generated action items! Review and edit them as needed.`);
       } else {
         alert('No actionable items were suggested by AI. Try adding more details to the objective.');
       }

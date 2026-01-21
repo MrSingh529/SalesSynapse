@@ -435,35 +435,35 @@ const VisitReport = ({ isManager = false }) => {
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {filters.companyName && (
                 <Chip
-                  label=Company: ${filters.companyName}}
+                  label={`Company: ${filters.companyName}`}
                   onDelete={() => handleFilterChange('companyName', '')}
                   size={isMobile ? "medium" : "small"}
                 />
               )}
               {filters.salesType && (
                 <Chip
-                  label=Type: ${SALES_TYPES.find(t => t.value === filters.salesType)?.label}}
+                  label={`Type: ${SALES_TYPES.find(t => t.value === filters.salesType)?.label}`}
                   onDelete={() => handleFilterChange('salesType', '')}
                   size={isMobile ? "medium" : "small"}
                 />
               )}
               {filters.salesStage && (
                 <Chip
-                  label=Stage: ${SALES_STAGES.find(s => s.value === filters.salesStage)?.label}}
+                  label={`Stage: ${SALES_STAGES.find(s => s.value === filters.salesStage)?.label}`}
                   onDelete={() => handleFilterChange('salesStage', '')}
                   size={isMobile ? "medium" : "small"}
                 />
               )}
               {filters.startDate && (
                 <Chip
-                  label=From: ${filters.startDate.toLocaleDateString()}}
+                  label={`From: ${filters.startDate.toLocaleDateString()}`}
                   onDelete={() => handleFilterChange('startDate', null)}
                   size={isMobile ? "medium" : "small"}
                 />
               )}
               {filters.endDate && (
                 <Chip
-                  label=To: ${filters.endDate.toLocaleDateString()}}
+                  label={`To: ${filters.endDate.toLocaleDateString()}`}
                   onDelete={() => handleFilterChange('endDate', null)}
                   size={isMobile ? "medium" : "small"}
                 />
