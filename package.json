@@ -47,7 +47,7 @@
     "eject": "react-scripts eject",
     "pwa-build": "npm run generate-icons && npm run build",
     "generate-icons": "node scripts/generate-icons.js"
-  }
+  },
   "devDependencies": {
     "react-scripts": "5.0.1"
   },
