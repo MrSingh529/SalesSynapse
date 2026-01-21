@@ -200,7 +200,7 @@ const AIActionItems = ({ visitData, userRole = 'sales', onItemsGenerated, showTi
               AI-Generated Action Items
             </Typography>
             <Chip
-              label=${aiActions.length} suggestions}
+              label={`${aiActions.length} suggestions`}
               size="small"
               color="primary"
               variant="outlined"
