@@ -1,409 +1,251 @@
 import React, { useState } from "react";
-
-import { Outlet, useNavigate } from "react-router-dom";
-
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
-  AppBar,
-  Box,
-  CssBaseline,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Typography,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  Container,
-  Link,
+  AppBar, Box, CssBaseline, Drawer, IconButton, List, ListItem,
+  ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography,
+  Avatar, Menu, MenuItem, Divider, Container, Paper, BottomNavigation,
+  BottomNavigationAction, useTheme, useMediaQuery
 } from "@mui/material";
-
 import {
-  Menu as MenuIcon,
-  Dashboard,
-  AddCircle,
-  ListAlt,
-  AdminPanelSettings,
-  Logout,
-  Person,
-  Business,
-  Assessment,
-  TrendingUp,
+  Dashboard, AddCircle, ListAlt, AdminPanelSettings, Logout,
+  Person, Business
 } from "@mui/icons-material";
-
 import { useAuth } from "../../context/AuthContext";
-
 import { logout } from "../../services/authService";
+import { APP_NAME } from "../../utils/constants";
+import { iosColors } from "../../styles/iosTheme"; // Import your iOS colors
 
-import { APP_NAME, FOOTER_TEXT, SUPPORT_EMAIL } from "../../utils/constants";
-
-const drawerWidth = 260;
+const desktopDrawerWidth = 260;
 
 const MainLayout = () => {
   const { user } = useAuth();
-
   const navigate = useNavigate();
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [anchorEl, setAnchorEl] = useState(null);
-
   const isManager = user?.email?.includes("manager") || false;
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   const handleLogout = async () => {
     await logout();
-
     navigate("/login");
   };
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-
     { text: "New Visit", icon: <AddCircle />, path: "/new-visit" },
-
-    { text: "Visit Reports", icon: <ListAlt />, path: "/visits" },
-
-    ...(isManager
-      ? [{ text: "Manager View", icon: <AdminPanelSettings />, path: "/admin" }]
-      : []),
+    { text: "Reports", icon: <ListAlt />, path: "/visits" },
+    ...(isManager ? [{ text: "Admin", icon: <AdminPanelSettings />, path: "/admin" }] : []),
   ];
 
-  const drawer = (
-    <div>
-      <Toolbar
-        sx={{
-          justifyContent: "center",
+  // Desktop Sidebar
+  const desktopDrawer = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: iosColors.background }}>
+      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          bgcolor: iosColors.systemBlue, color: 'white', p: 1, 
+          borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' 
+        }}>
+          <Business />
+        </Box>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>{APP_NAME}</Typography>
+      </Box>
 
-          bgcolor: "primary.main",
-
-          color: "white",
-
-          flexDirection: "column",
-
-          py: 2,
-        }}
-      >
-        <Business sx={{ fontSize: 40, mb: 1 }} />
-
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{ fontWeight: "bold", textAlign: "center" }}
-        >
-          {APP_NAME}
-        </Typography>
-
-        <Typography variant="caption" sx={{ opacity: 0.9, mt: 0.5 }}>
-          AI-Powered Sales Intelligence
-        </Typography>
-      </Toolbar>
-
-      <Divider />
-
-      <List sx={{ pt: 2 }}>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-            <ListItemButton
-              onClick={() => navigate(item.path)}
-              sx={{
-                mx: 1,
-
-                borderRadius: 1,
-
-                "&:hover": {
-                  bgcolor: "primary.light",
-
-                  color: "white",
-
-                  "& .MuiListItemIcon-root": {
-                    color: "white",
-                  },
-                },
-              }}
-            >
-              <ListItemIcon sx={{ color: "primary.main", minWidth: 40 }}>
-                {item.icon}
-              </ListItemIcon>
-
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{
-                  fontWeight: "medium",
-
-                  fontSize: "0.95rem",
+      <List sx={{ px: 2, flexGrow: 1 }}>
+        {menuItems.map((item) => {
+          const isActive = location.pathname.includes(item.path);
+          return (
+            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => navigate(item.path)}
+                sx={{
+                  borderRadius: 2,
+                  bgcolor: isActive ? 'rgba(0, 122, 255, 0.1)' : 'transparent',
+                  color: isActive ? iosColors.systemBlue : iosColors.label,
+                  '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.05)' }
                 }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
+              >
+                <ListItemIcon sx={{ 
+                  color: isActive ? iosColors.systemBlue : iosColors.systemGray, 
+                  minWidth: 40 
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text} 
+                  primaryTypographyProps={{ fontWeight: isActive ? 600 : 400 }} 
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
 
-      {/* Sidebar Footer */}
-
-      <Box
-        sx={{
-          mt: "auto",
-
-          p: 2,
-
-          bgcolor: "grey.50",
-
-          borderTop: 1,
-
-          borderColor: "divider",
-        }}
-      >
-        <Typography variant="caption" color="text.secondary" display="block">
-          {FOOTER_TEXT}
-        </Typography>
-
-        <Link
-          href={`mailto:${SUPPORT_EMAIL}`}
-          variant="caption"
-          color="primary"
-          sx={{
-            textDecoration: "none",
-            "&:hover": { textDecoration: "underline" },
-          }}
-        >
-          For Support: {SUPPORT_EMAIL}
-        </Link>
+      <Box sx={{ p: 2, pb: 4 }}>
+        <Paper elevation={0} sx={{ 
+          p: 2, borderRadius: 3, bgcolor: 'white', display: 'flex', 
+          alignItems: 'center', gap: 2, border: `1px solid ${iosColors.separator}`
+        }}>
+          <Avatar sx={{ width: 36, height: 36, bgcolor: iosColors.systemGray4 }}>
+            <Person sx={{ color: 'white' }} />
+          </Avatar>
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+              {user?.email?.split('@')[0]}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {isManager ? 'Manager' : 'Sales Rep'}
+            </Typography>
+          </Box>
+          <IconButton size="small" onClick={handleLogout} sx={{ color: iosColors.systemRed }}>
+            <Logout fontSize="small" />
+          </IconButton>
+        </Paper>
       </Box>
-    </div>
+    </Box>
   );
 
+  // Get dynamic title for Header based on route
+  const getPageTitle = () => {
+    if (location.pathname.includes('/dashboard')) return "Dashboard";
+    if (location.pathname.includes('/new-visit') || location.pathname.includes('/edit-visit')) return "Visit Form";
+    if (location.pathname.includes('/visits')) return "Reports";
+    if (location.pathname.includes('/admin')) return "Admin";
+    return APP_NAME;
+  };
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: iosColors.background }}>
       <CssBaseline />
 
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-
-          ml: { sm: `${drawerWidth}px` },
-
-          bgcolor: "background.paper",
-
-          color: "text.primary",
-
-          boxShadow: 1,
-
-          borderBottom: 1,
-
-          borderColor: "divider",
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" }, color: "primary.main" }}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <TrendingUp sx={{ color: "primary.main", mr: 1 }} />
-
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{
-                fontWeight: "bold",
-
-                background: "linear-gradient(45deg, #1976d2 30%, #21CBF3 90%)",
-
-                WebkitBackgroundClip: "text",
-
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {window.location.pathname === "/dashboard"
-                ? "Dashboard"
-                : window.location.pathname === "/new-visit"
-                  ? "New Visit"
-                  : window.location.pathname === "/visits"
-                    ? "Visit Reports"
-                    : window.location.pathname === "/admin"
-                      ? "Manager Dashboard"
-                      : APP_NAME}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ display: { xs: "none", sm: "block" } }}
-            >
-              {user?.email}
-            </Typography>
-
-            <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-              <Avatar sx={{ bgcolor: "primary.main" }}>
-                <Person />
-              </Avatar>
-            </IconButton>
-
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              transformOrigin={{ horizontal: "right", vertical: "top" }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            >
-              <MenuItem disabled sx={{ opacity: 1 }}>
-                <Box>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {user?.email?.split("@")[0]}
-                  </Typography>
-
-                  <Typography variant="caption" color="text.secondary">
-                    {isManager ? "Manager" : "Sales Representative"}
-                  </Typography>
-                </Box>
-              </MenuItem>
-
-              <Divider />
-
-              <MenuItem onClick={handleLogout}>
-                <ListItemIcon>
-                  <Logout fontSize="small" />
-                </ListItemIcon>
-                Logout
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Box sx={{ display: "flex", flexGrow: 1 }}>
-        <Box
-          component="nav"
-          sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        >
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true,
-            }}
-            sx={{
-              display: { xs: "block", sm: "none" },
-
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-
-                width: drawerWidth,
-
-                borderRight: 1,
-
-                borderColor: "divider",
-              },
-            }}
-          >
-            {drawer}
-          </Drawer>
-
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: "none", sm: "block" },
-
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-
-                width: drawerWidth,
-
-                borderRight: 1,
-
-                borderColor: "divider",
-
-                display: "flex",
-
-                flexDirection: "column",
-              },
-            }}
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Box>
-
-        <Box
-          component="main"
+      {/* Desktop Drawer */}
+      {!isMobile && (
+        <Drawer
+          variant="permanent"
           sx={{
-            flexGrow: 1,
-
-            p: 3,
-
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-
-            mt: 8,
-
-            display: "flex",
-
-            flexDirection: "column",
-
-            minHeight: "calc(100vh - 64px)",
+            width: desktopDrawerWidth,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: desktopDrawerWidth,
+              boxSizing: "border-box",
+              borderRight: `1px solid ${iosColors.separator}`,
+            },
           }}
         >
-          <Box sx={{ flexGrow: 1 }}>
-            <Outlet />
-          </Box>
+          {desktopDrawer}
+        </Drawer>
+      )}
 
-          {/* Main Footer */}
-
-          <Container
-            maxWidth={false}
-            sx={{
-              mt: 4,
-
-              py: 2,
-
-              borderTop: 1,
-
-              borderColor: "divider",
-
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              {FOOTER_TEXT}
+      {/* Main Content Area */}
+      <Box sx={{ 
+        flexGrow: 1, 
+        display: "flex", 
+        flexDirection: "column",
+        width: isMobile ? '100%' : `calc(100% - ${desktopDrawerWidth}px)`,
+        pb: isMobile ? '80px' : 0 // Padding for bottom nav
+      }}>
+        
+        {/* iOS Styled Header */}
+        <AppBar
+          position="sticky"
+          elevation={0}
+          sx={{
+            bgcolor: 'rgba(242, 242, 247, 0.8)', // iOS Background Blur
+            backdropFilter: 'blur(20px) saturate(180%)',
+            borderBottom: `0.5px solid ${iosColors.separator}`,
+            color: iosColors.label,
+          }}
+        >
+          <Toolbar sx={{ justifyContent: isMobile ? 'center' : 'space-between' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '17px' }}>
+              {getPageTitle()}
             </Typography>
 
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", mt: 1 }}
-            >
-              © {new Date().getFullYear()} RV Solutions. All rights reserved.
-            </Typography>
-          </Container>
+            {/* Desktop header right side */}
+            {!isMobile && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: iosColors.secondaryLabel }}>
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                </Typography>
+              </Box>
+            )}
+            
+            {/* Mobile Profile Icon (top right) */}
+            {isMobile && (
+               <IconButton 
+                onClick={handleMenuOpen} 
+                sx={{ position: 'absolute', right: 16 }}
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: iosColors.systemBlue }}>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            )}
+          </Toolbar>
+        </AppBar>
+
+        {/* Mobile Profile Menu */}
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+          <MenuItem disabled>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout} sx={{ color: iosColors.systemRed }}>
+            <ListItemIcon><Logout fontSize="small" sx={{ color: 'inherit' }} /></ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
+
+        {/* Page Content */}
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+          <Outlet />
         </Box>
       </Box>
+
+      {/* iOS Bottom Navigation (Mobile Only) */}
+      {isMobile && (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            position: 'fixed', 
+            bottom: 0, 
+            left: 0, 
+            right: 0, 
+            zIndex: 1000,
+            bgcolor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            borderTop: `0.5px solid ${iosColors.separator}`,
+            pb: 'env(safe-area-inset-bottom)' // Respects iPhone home indicator
+          }}
+        >
+          <BottomNavigation
+            value={location.pathname}
+            onChange={(_, newValue) => navigate(newValue)}
+            sx={{ bgcolor: 'transparent', height: 65 }}
+          >
+            {menuItems.map((item) => (
+              <BottomNavigationAction
+                key={item.path}
+                label={item.text}
+                value={item.path}
+                icon={item.icon}
+                sx={{
+                  color: location.pathname.includes(item.path) ? iosColors.systemBlue : iosColors.systemGray,
+                  '& .MuiBottomNavigationAction-label': {
+                    fontSize: '10px',
+                    fontWeight: location.pathname.includes(item.path) ? 600 : 400,
+                    mt: 0.5
+                  }
+                }}
+              />
+            ))}
+          </BottomNavigation>
+        </Paper>
+      )}
     </Box>
   );
 };
