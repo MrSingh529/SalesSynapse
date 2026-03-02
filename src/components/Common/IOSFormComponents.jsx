@@ -11,9 +11,9 @@ import {
   InputAdornment,
   Chip,
   Fade,
-  Zoom,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Alert
 } from '@mui/material';
 import {
   CheckCircle,
@@ -24,13 +24,8 @@ import {
   Search,
   CalendarToday,
   AccessTime,
-  Person,
   Email,
-  Phone,
-  LocationOn,
-  AttachMoney,
-  Business,
-  Description
+  Phone
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -64,7 +59,6 @@ export const IOSTextField = React.forwardRef(({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  const { pressAnimation } = useIOSAnimations();
   const inputRef = useRef(null);
 
   const handleFocus = (e) => {
@@ -281,7 +275,6 @@ export const IOSSelect = React.forwardRef(({
   ...props
 }, ref) => {
   const [open, setOpen] = useState(false);
-  const { pressAnimation } = useIOSAnimations();
   const selectRef = useRef(null);
 
   const handleOpen = () => {
@@ -453,7 +446,6 @@ export const IOSDatePicker = React.forwardRef(({
   ...props
 }, ref) => {
   const [open, setOpen] = useState(false);
-  const { pressAnimation } = useIOSAnimations();
   const pickerRef = useRef(null);
 
   const handleOpen = () => {
@@ -573,7 +565,6 @@ export const IOSTimePicker = React.forwardRef(({
   ...props
 }, ref) => {
   const [open, setOpen] = useState(false);
-  const { pressAnimation } = useIOSAnimations();
   const pickerRef = useRef(null);
 
   const handleOpen = () => {
@@ -688,7 +679,6 @@ export const IOSTagInput = ({
   sx = {},
 }) => {
   const [inputValue, setInputValue] = useState('');
-  const { pressAnimation } = useIOSAnimations();
   const inputRef = useRef(null);
 
   const handleKeyDown = (e) => {
@@ -855,7 +845,6 @@ export const IOSFormSection = ({
 export const useIOSFormValidation = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const { shakeAnimation } = useIOSAnimations();
 
   const validateField = (name, value, rules) => {
     if (!rules) return null;
@@ -890,12 +879,8 @@ export const useIOSFormValidation = () => {
   };
 
   const handleChange = (name, value, rules, onChange) => {
-    // Update field value
-    if (onChange) {
-      onChange(value);
-    }
+    if (onChange) onChange(value);
     
-    // Validate if touched
     if (touched[name]) {
       const error = validateField(name, value, rules);
       setErrors(prev => ({ ...prev, [name]: error }));
@@ -931,12 +916,6 @@ export const useIOSFormValidation = () => {
     setTouched({});
   };
 
-  const shakeField = (fieldName, elementRef) => {
-    if (elementRef.current) {
-      shakeAnimation(elementRef.current);
-    }
-  };
-
   return {
     errors,
     touched,
@@ -944,13 +923,12 @@ export const useIOSFormValidation = () => {
     handleBlur,
     validateForm,
     resetForm,
-    shakeField,
     setErrors,
     setTouched,
   };
 };
 
-export default {
+const IOSComponents = {
   IOSTextField,
   IOSSelect,
   IOSDatePicker,
@@ -959,3 +937,5 @@ export default {
   IOSFormSection,
   useIOSFormValidation,
 };
+
+export default IOSComponents;
