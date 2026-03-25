@@ -14,9 +14,9 @@ import { createVisit, getVisitById, updateVisit } from '../services/visitService
 import { useAuth } from '../context/AuthContext';
 
 const NewVisit = () => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the ID from the URL if it exists
+  const { id } = useParams();
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -125,6 +125,8 @@ const NewVisit = () => {
             loading={loading} 
             initialData={initialData} 
             isEditMode={isEditMode}
+            userRole={userData?.role}
+            userIsCreator={initialData?.salesPersonId === user?.uid} // Use optional chaining
           />
         )}
       </Paper>
