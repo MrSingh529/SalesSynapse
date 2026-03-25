@@ -270,7 +270,10 @@ const VisitReport = ({ isManager = false }) => {
   // Check if current user can edit this visit
   const canEditVisit = (visit) => {
     if (!user || !visit) return false;
-    return visit.salesPersonId === user.uid;
+    const isCreator = visit.salesPersonId === user.uid;
+    const isManager = userData?.role === 'manager';
+    
+    return isCreator || isManager;
   };
   // Handle edit visit
   const handleEditVisit = () => {
