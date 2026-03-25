@@ -199,9 +199,6 @@ export const updateVisit = async (visitId, visitData) => {
       }
     };
 
-    // If actionable items changed, you might want to re-run AI in the background
-    // (Similar logic to createVisit can be applied here if desired)
-
     await updateDoc(visitRef, visitWithMeta);
     return { success: true };
   } catch (error) {
