@@ -102,7 +102,7 @@ const getSalesTypeLabel = (typeValue) => {
 };
 const VisitReport = ({ isManager = false }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [visits, setVisits] = useState([]);
   const [filteredVisits, setFilteredVisits] = useState([]);
   const [loading, setLoading] = useState(true);
