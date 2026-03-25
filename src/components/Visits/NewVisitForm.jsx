@@ -10,6 +10,8 @@ import {
   useTheme,
   useMediaQuery,
   Tooltip,
+  Alert,
+  Chip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -558,80 +560,132 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
   const renderStep4 = () => (
     <>
       <IOSFormSection title="Contact Details" subtitle="Add one or more contacts from the meeting.">
+        {/* Add visual feedback helper text */}
+        {isEditMode && initialData?.contacts?.length > 0 && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 2, 
+              borderRadius: 2,
+              '& .MuiAlert-icon': {
+                alignItems: 'center'
+              }
+            }}
+          >
+            <Typography variant="body2">
+              <strong>Contact Management:</strong> You can edit existing contact details and add new contacts, 
+              but existing contacts cannot be removed. This ensures a complete history of all stakeholders.
+            </Typography>
+          </Alert>
+        )}
+  
         <Grid container spacing={2}>
-          {formData.contacts.map((contact, index) => (
-            <Grid item xs={12} key={index}>
-              <LockedFieldWrapper fieldName="contacts">
-                <Box sx={{ ...iosCard, p: 2.5 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 2,
-                    }}
-                  >
-                    <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
-                      Contact {index + 1} {contact.isPrimary ? "(Primary)" : ""}
-                    </Typography>
-
-                    {formData.contacts.length > 1 && isFieldEditable('contacts') && (
-                      <IconButton
-                        onClick={() => removeContact(index)}
-                        size="small"
-                        sx={{ color: iosColors.systemRed }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
+          {formData.contacts.map((contact, index) => {
+            // Check if this is an existing contact (has an ID or was in initialData)
+            const isExistingContact = isEditMode && initialData?.contacts && 
+              initialData.contacts.some(c => 
+                c.id === contact.id || 
+                (c.name === contact.name && c.email === contact.email && c.mobile === contact.mobile)
+              );
+            
+            // Determine if we can delete this contact
+            const canDeleteContact = () => {
+              // Always allow deletion in create mode
+              if (!isEditMode) return true;
+              // In edit mode, only allow deletion of newly added contacts
+              return !isExistingContact;
+            };
+            
+            return (
+              <Grid item xs={12} key={index}>
+                <LockedFieldWrapper fieldName="contacts">
+                  <Box sx={{ ...iosCard, p: 2.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 2,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+                        Contact {index + 1} {contact.isPrimary ? "(Primary)" : ""}
+                        {isExistingContact && isEditMode && (
+                          <Chip 
+                            label="Existing" 
+                            size="small" 
+                            sx={{ ml: 1, fontSize: '0.7rem', height: 20 }}
+                            color="info"
+                          />
+                        )}
+                      </Typography>
+  
+                      {/* Only show delete button if contact can be deleted */}
+                      {formData.contacts.length > 1 && isFieldEditable('contacts') && canDeleteContact() && (
+                        <IconButton
+                          onClick={() => removeContact(index)}
+                          size="small"
+                          sx={{ color: iosColors.systemRed }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      
+                      {/* Show lock icon for existing contacts that can't be deleted */}
+                      {formData.contacts.length > 1 && isFieldEditable('contacts') && !canDeleteContact() && (
+                        <Tooltip title="Existing contacts cannot be removed, but you can add new ones">
+                          <LockIcon sx={{ color: iosColors.systemGray3, fontSize: 18 }} />
+                        </Tooltip>
+                      )}
+                    </Box>
+  
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <IOSTextField
+                          label="Name"
+                          value={contact.name}
+                          onChange={(e) => handleContactChange(index, "name", e.target.value)}
+                          required={contact.isPrimary}
+                          disabled={!isFieldEditable('contacts')}
+                        />
+                      </Grid>
+  
+                      <Grid item xs={12} sm={6}>
+                        <IOSTextField
+                          label="Designation"
+                          value={contact.designation}
+                          onChange={(e) => handleContactChange(index, "designation", e.target.value)}
+                          disabled={!isFieldEditable('contacts')}
+                        />
+                      </Grid>
+  
+                      <Grid item xs={12} sm={6}>
+                        <IOSTextField
+                          label="Mobile"
+                          type="tel"
+                          value={contact.mobile}
+                          onChange={(e) => handleContactChange(index, "mobile", e.target.value)}
+                          disabled={!isFieldEditable('contacts')}
+                        />
+                      </Grid>
+  
+                      <Grid item xs={12} sm={6}>
+                        <IOSTextField
+                          label="Email"
+                          type="email"
+                          value={contact.email}
+                          onChange={(e) => handleContactChange(index, "email", e.target.value)}
+                          required={contact.isPrimary}
+                          disabled={!isFieldEditable('contacts')}
+                        />
+                      </Grid>
+                    </Grid>
                   </Box>
-
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <IOSTextField
-                        label="Name"
-                        value={contact.name}
-                        onChange={(e) => handleContactChange(index, "name", e.target.value)}
-                        required={contact.isPrimary}
-                        disabled={!isFieldEditable('contacts')}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <IOSTextField
-                        label="Designation"
-                        value={contact.designation}
-                        onChange={(e) => handleContactChange(index, "designation", e.target.value)}
-                        disabled={!isFieldEditable('contacts')}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <IOSTextField
-                        label="Mobile"
-                        type="tel"
-                        value={contact.mobile}
-                        onChange={(e) => handleContactChange(index, "mobile", e.target.value)}
-                        disabled={!isFieldEditable('contacts')}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <IOSTextField
-                        label="Email"
-                        type="email"
-                        value={contact.email}
-                        onChange={(e) => handleContactChange(index, "email", e.target.value)}
-                        required={contact.isPrimary}
-                        disabled={!isFieldEditable('contacts')}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-              </LockedFieldWrapper>
-            </Grid>
-          ))}
-
+                </LockedFieldWrapper>
+              </Grid>
+            );
+          })}
+  
           {isFieldEditable('contacts') && (
             <Grid item xs={12}>
               <Button
@@ -646,11 +700,11 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
           )}
         </Grid>
       </IOSFormSection>
-
+  
       <Box sx={{ my: 2 }}>
         <Divider />
       </Box>
-
+  
       <IOSFormSection title="Expenses" subtitle="Enter expenses for this visit (₹).">
         <LockedFieldWrapper fieldName="expenses">
           <Box sx={{ ...iosCard, p: 2.5 }}>
@@ -665,7 +719,7 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
                   disabled={!isFieldEditable('expenses')}
                 />
               </Grid>
-
+  
               <Grid item xs={12} sm={6} md={3}>
                 <IOSTextField
                   label="Food"
@@ -676,7 +730,7 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
                   disabled={!isFieldEditable('expenses')}
                 />
               </Grid>
-
+  
               <Grid item xs={12} sm={6} md={3}>
                 <IOSTextField
                   label="Accommodation"
@@ -687,7 +741,7 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
                   disabled={!isFieldEditable('expenses')}
                 />
               </Grid>
-
+  
               <Grid item xs={12} sm={6} md={3}>
                 <IOSTextField
                   label="Miscellaneous"
@@ -698,7 +752,7 @@ const NewVisitForm = ({ onSubmit, loading, initialData, isEditMode, userRole, us
                   disabled={!isFieldEditable('expenses')}
                 />
               </Grid>
-
+  
               <Grid item xs={12}>
                 <Divider sx={{ my: 2 }} />
                 <Box
