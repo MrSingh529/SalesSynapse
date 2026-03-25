@@ -14,12 +14,13 @@ export const FIELD_PERMISSIONS = {
       stage_5: ['estimatedBudget', 'salesStage', 'salesType'],
     },
     
-    // Fields that are always editable
+    // Fields always editable
     alwaysEditable: [
       'additionalNotes',
       'actionable',
       'discussionDetails',
-      'outcome'
+      'outcome',
+      'contacts'
     ],
     
     // Fields that require manager approval to edit
