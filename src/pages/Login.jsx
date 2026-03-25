@@ -416,13 +416,7 @@ const Login = () => {
                 {/* Copyright */}
                 <Box sx={{ mt: 3, pt: 2, textAlign: "center" }}>
                   <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
-                    © {new Date().getFullYear()} RV Solutions
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
-                    Developed by Harpinder Singh
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
-                    For Support: {SUPPORT_EMAIL}
+                    © {new Date().getFullYear()} RV Solutions | Developed by Harpinder Singh
                   </Typography>
                 </Box>
               </Box>
