@@ -106,15 +106,16 @@ const Login = () => {
       <CssBaseline />
       <Box
         sx={{
-          minHeight: "100vh",
+          height: "100vh",
+          width: "100vw",
           bgcolor: "#F2F2F7",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          p: 3,
+          overflow: "hidden",
         }}
       >
-        <Container maxWidth="lg" disableGutters>
+        <Container maxWidth="lg" sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Paper
             elevation={0}
             sx={{
@@ -123,6 +124,8 @@ const Login = () => {
               boxShadow: "0 20px 40px rgba(0, 0, 0, 0.08)",
               border: "1px solid rgba(255, 255, 255, 0.5)",
               animation: "slideUp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)",
+              width: "100%",
+              maxHeight: "90vh",
               "@keyframes slideUp": {
                 from: {
                   opacity: 0,
@@ -135,17 +138,17 @@ const Login = () => {
               },
             }}
           >
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" } }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, height: "100%" }}>
               {/* Left Side - Login Form */}
-              <Box sx={{ flex: 1, p: { xs: 3, lg: 6 } }}>
+              <Box sx={{ flex: 1, p: { xs: 3, lg: 5 }, overflowY: "auto", maxHeight: "90vh" }}>
                 {/* Logo */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{ mb: 3 }}>
                   <img
                     src="/logo.png"
                     alt={`${APP_NAME} Logo`}
                     style={{
-                      width: "80px",
-                      height: "80px",
+                      width: "70px",
+                      height: "70px",
                       objectFit: "contain",
                     }}
                     onError={(e) => {
@@ -153,7 +156,7 @@ const Login = () => {
                       e.target.style.display = "none";
                       const parent = e.target.parentElement;
                       if (parent) {
-                        parent.innerHTML = '<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12V18L12 22L19 18V12" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        parent.innerHTML = '<svg width="70" height="70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12V18L12 22L19 18V12" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                       }
                     }}
                   />
@@ -161,26 +164,26 @@ const Login = () => {
 
                 {/* Welcome Text */}
                 <Typography
-                  variant="h3"
+                  variant="h4"
                   sx={{
-                    fontSize: { xs: "2rem", lg: "2.5rem" },
+                    fontSize: { xs: "1.75rem", lg: "2rem" },
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
                     color: "#1C1C1E",
-                    mb: 1,
+                    mb: 0.5,
                   }}
                 >
-                  Sales Synapse Pro
+                  Welcome Back
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{
-                    fontSize: { xs: "1rem", lg: "1.125rem" },
+                    fontSize: { xs: "0.875rem", lg: "1rem" },
                     color: "#8E8E93",
-                    mb: 4,
+                    mb: 3,
                   }}
                 >
-                  AI-Powered Sales Intelligence Platform
+                  Sign in to continue to {APP_NAME}
                 </Typography>
 
                 {/* Error Alert */}
@@ -188,7 +191,7 @@ const Login = () => {
                   <Alert
                     severity="error"
                     sx={{
-                      mb: 3,
+                      mb: 2,
                       borderRadius: 2,
                       "& .MuiAlert-icon": {
                         alignItems: "center",
@@ -202,16 +205,16 @@ const Login = () => {
                 {/* Login Form */}
                 <Box component="form" onSubmit={handleSubmit} noValidate>
                   {/* Email Field */}
-                  <Box sx={{ mb: 3 }}>
+                  <Box sx={{ mb: 2.5 }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: "0.7rem",
                         fontWeight: 600,
                         color: "#8E8E93",
                         textTransform: "uppercase",
                         letterSpacing: "0.5px",
-                        mb: 1,
+                        mb: 0.5,
                         display: "block",
                       }}
                     >
@@ -229,7 +232,7 @@ const Login = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email sx={{ color: "#8E8E93", fontSize: 20 }} />
+                            <Email sx={{ color: "#8E8E93", fontSize: 18 }} />
                           </InputAdornment>
                         ),
                         sx: {
@@ -253,24 +256,24 @@ const Login = () => {
                       }}
                       sx={{
                         "& .MuiInputBase-input": {
-                          py: 1.75,
-                          fontSize: "1rem",
+                          py: 1.5,
+                          fontSize: "0.95rem",
                         },
                       }}
                     />
                   </Box>
 
                   {/* Password Field */}
-                  <Box sx={{ mb: 3 }}>
+                  <Box sx={{ mb: 2.5 }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: "0.7rem",
                         fontWeight: 600,
                         color: "#8E8E93",
                         textTransform: "uppercase",
                         letterSpacing: "0.5px",
-                        mb: 1,
+                        mb: 0.5,
                         display: "block",
                       }}
                     >
@@ -288,7 +291,7 @@ const Login = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Lock sx={{ color: "#8E8E93", fontSize: 20 }} />
+                            <Lock sx={{ color: "#8E8E93", fontSize: 18 }} />
                           </InputAdornment>
                         ),
                         endAdornment: (
@@ -297,8 +300,9 @@ const Login = () => {
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               sx={{ color: "#8E8E93" }}
+                              size="small"
                             >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                              {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -323,8 +327,8 @@ const Login = () => {
                       }}
                       sx={{
                         "& .MuiInputBase-input": {
-                          py: 1.75,
-                          fontSize: "1rem",
+                          py: 1.5,
+                          fontSize: "0.95rem",
                         },
                       }}
                     />
@@ -341,9 +345,9 @@ const Login = () => {
                       "&:hover": {
                         bgcolor: "#0051D5",
                       },
-                      py: 1.75,
+                      py: 1.5,
                       borderRadius: 2,
-                      fontSize: "1rem",
+                      fontSize: "0.95rem",
                       fontWeight: 600,
                       textTransform: "none",
                       boxShadow: "0 4px 12px rgba(0, 122, 255, 0.3)",
@@ -355,10 +359,10 @@ const Login = () => {
                     }}
                   >
                     {loading ? (
-                      <CircularProgress size={24} color="inherit" />
+                      <CircularProgress size={22} color="inherit" />
                     ) : (
                       <>
-                        <ArrowForward sx={{ mr: 1, fontSize: 20 }} />
+                        <ArrowForward sx={{ mr: 1, fontSize: 18 }} />
                         Sign In
                       </>
                     )}
@@ -366,8 +370,8 @@ const Login = () => {
                 </Box>
 
                 {/* Footer Links */}
-                <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: "divider" }}>
-                  <Typography variant="body2" color="text.secondary" align="center">
+                <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: "divider" }}>
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ fontSize: "0.8rem" }}>
                     Forgot your password?{" "}
                     <Box
                       component="span"
@@ -389,7 +393,7 @@ const Login = () => {
                     variant="body2"
                     color="text.secondary"
                     align="center"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, fontSize: "0.8rem" }}
                   >
                     New to {APP_NAME}?{" "}
                     <Box
@@ -410,14 +414,14 @@ const Login = () => {
                 </Box>
 
                 {/* Copyright */}
-                <Box sx={{ mt: 4, pt: 3, textAlign: "center" }}>
-                  <Typography variant="caption" color="text.secondary" display="block">
+                <Box sx={{ mt: 3, pt: 2, textAlign: "center" }}>
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
                     © {new Date().getFullYear()} RV Solutions
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block">
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
                     Developed by Harpinder Singh
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block">
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: "0.7rem" }}>
                     For Support: {SUPPORT_EMAIL}
                   </Typography>
                 </Box>
@@ -429,7 +433,7 @@ const Login = () => {
                   display: { xs: "none", lg: "flex" },
                   flex: 1,
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  p: 6,
+                  p: 4,
                   alignItems: "center",
                   justifyContent: "center",
                   position: "relative",
@@ -466,7 +470,7 @@ const Login = () => {
                           transform: "translateY(0px)",
                         },
                         "50%": {
-                          transform: "translateY(-20px)",
+                          transform: "translateY(-15px)",
                         },
                         "100%": {
                           transform: "translateY(0px)",
@@ -474,15 +478,16 @@ const Login = () => {
                       },
                     }}
                   >
-                    <Business sx={{ fontSize: 100, mb: 3, filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.2))" }} />
+                    <Business sx={{ fontSize: 80, mb: 2, filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.2))" }} />
                   </Box>
               
                   {/* Animated Text */}
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
                       fontWeight: 700,
-                      mb: 2,
+                      mb: 1.5,
+                      fontSize: "1.5rem",
                       animation: "fadeInUp 0.8s ease-out",
                       "@keyframes fadeInUp": {
                         "0%": {
@@ -500,10 +505,11 @@ const Login = () => {
                   </Typography>
               
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
                       opacity: 0.9,
-                      mb: 4,
+                      mb: 3,
+                      fontSize: "0.85rem",
                       animation: "fadeInUp 0.8s ease-out 0.2s backwards",
                     }}
                   >
@@ -511,7 +517,7 @@ const Login = () => {
                   </Typography>
               
                   {/* Animated Feature Cards */}
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 4 }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 2 }}>
                     {[
                       { icon: TrendingUp, text: "Smart Sales Analytics", delay: 0 },
                       { icon: Assignment, text: "Automated Visit Reports", delay: 0.1 },
@@ -522,11 +528,11 @@ const Login = () => {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 2,
+                          gap: 1.5,
                           bgcolor: "rgba(255,255,255,0.1)",
                           backdropFilter: "blur(10px)",
-                          borderRadius: 3,
-                          p: 2,
+                          borderRadius: 2,
+                          p: 1.5,
                           transition: "all 0.3s ease",
                           animation: `slideInRight 0.5s ease-out ${feature.delay}s backwards`,
                           "@keyframes slideInRight": {
@@ -540,47 +546,18 @@ const Login = () => {
                             },
                           },
                           "&:hover": {
-                            transform: "translateX(10px)",
+                            transform: "translateX(8px)",
                             bgcolor: "rgba(255,255,255,0.2)",
                           },
                         }}
                       >
-                        <feature.icon sx={{ fontSize: 28 }} />
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <feature.icon sx={{ fontSize: 22 }} />
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.85rem" }}>
                           {feature.text}
                         </Typography>
                       </Box>
                     ))}
                   </Box>
-              
-                  {/* Animated Pulse Effect */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 20,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: 100,
-                      height: 100,
-                      borderRadius: "50%",
-                      background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
-                      animation: "pulse 2s ease-in-out infinite",
-                      "@keyframes pulse": {
-                        "0%": {
-                          transform: "translateX(-50%) scale(0.8)",
-                          opacity: 0.5,
-                        },
-                        "50%": {
-                          transform: "translateX(-50%) scale(1.2)",
-                          opacity: 0.2,
-                        },
-                        "100%": {
-                          transform: "translateX(-50%) scale(0.8)",
-                          opacity: 0.5,
-                        },
-                      },
-                    }}
-                  />
                 </Box>
               </Box>
             </Box>
