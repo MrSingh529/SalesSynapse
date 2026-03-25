@@ -372,7 +372,7 @@ const Login = () => {
                 {/* Footer Links */}
                 <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: "divider" }}>
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ fontSize: "0.8rem" }}>
-                    Forgot your password?{" "}
+                    Forgot password?{" "}
                     <Box
                       component="span"
                       onClick={() => setResetDialogOpen(true)}
@@ -385,7 +385,7 @@ const Login = () => {
                         },
                       }}
                     >
-                      Reset here
+                      Reset
                     </Box>
                   </Typography>
 
@@ -408,7 +408,7 @@ const Login = () => {
                         },
                       }}
                     >
-                      Contact administrator
+                      Contact Admin
                     </Box>
                   </Typography>
                 </Box>
