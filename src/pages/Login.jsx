@@ -415,7 +415,7 @@ const Login = () => {
                     © {new Date().getFullYear()} RV Solutions
                   </Typography>
                   <Typography variant="caption" color="text.secondary" display="block">
-                    Developed in CEO Office Lab by Harpinder Singh
+                    Developed by Harpinder Singh
                   </Typography>
                   <Typography variant="caption" color="text.secondary" display="block">
                     For Support: {SUPPORT_EMAIL}
