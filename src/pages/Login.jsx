@@ -428,40 +428,161 @@ const Login = () => {
                 sx={{
                   display: { xs: "none", lg: "flex" },
                   flex: 1,
-                  bgcolor: "transparent",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   p: 6,
                   alignItems: "center",
                   justifyContent: "center",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
-                <img
-                  src="/login-illustration.png"
-                  alt="Login Illustration"
-                  style={{
-                    maxHeight: "450px",
-                    width: "auto",
-                    maxWidth: "100%",
-                    objectFit: "contain",
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    // Fallback if image doesn't exist - show a decorative element
-                    const parent = e.target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `
-                        <div style="text-align: center;">
-                          <div style="font-size: 8rem;">🚀</div>
-                          <div style="color: #8E8E93; margin-top: 1rem;">AI-Powered Sales Intelligence</div>
-                        </div>
-                      `;
-                    }
+                {/* Animated Background Circles */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    width: "200%",
+                    height: "200%",
+                    background: "radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)",
+                    backgroundSize: "50px 50px",
+                    animation: "moveBackground 20s linear infinite",
+                    "@keyframes moveBackground": {
+                      "0%": {
+                        transform: "translate(0, 0)",
+                      },
+                      "100%": {
+                        transform: "translate(50px, 50px)",
+                      },
+                    },
                   }}
                 />
+                
+                <Box sx={{ textAlign: "center", color: "white", position: "relative", zIndex: 1 }}>
+                  {/* Animated Icon */}
+                  <Box
+                    sx={{
+                      animation: "float 3s ease-in-out infinite",
+                      "@keyframes float": {
+                        "0%": {
+                          transform: "translateY(0px)",
+                        },
+                        "50%": {
+                          transform: "translateY(-20px)",
+                        },
+                        "100%": {
+                          transform: "translateY(0px)",
+                        },
+                      },
+                    }}
+                  >
+                    <Business sx={{ fontSize: 100, mb: 3, filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.2))" }} />
+                  </Box>
+              
+                  {/* Animated Text */}
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      animation: "fadeInUp 0.8s ease-out",
+                      "@keyframes fadeInUp": {
+                        "0%": {
+                          opacity: 0,
+                          transform: "translateY(30px)",
+                        },
+                        "100%": {
+                          opacity: 1,
+                          transform: "translateY(0)",
+                        },
+                      },
+                    }}
+                  >
+                    AI-Powered Sales Intelligence
+                  </Typography>
+              
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      opacity: 0.9,
+                      mb: 4,
+                      animation: "fadeInUp 0.8s ease-out 0.2s backwards",
+                    }}
+                  >
+                    Transform your sales workflow with intelligent insights
+                  </Typography>
+              
+                  {/* Animated Feature Cards */}
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 4 }}>
+                    {[
+                      { icon: TrendingUp, text: "Smart Sales Analytics", delay: 0 },
+                      { icon: Assignment, text: "Automated Visit Reports", delay: 0.1 },
+                      { icon: Analytics, text: "Real-time Pipeline Tracking", delay: 0.2 },
+                    ].map((feature, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          bgcolor: "rgba(255,255,255,0.1)",
+                          backdropFilter: "blur(10px)",
+                          borderRadius: 3,
+                          p: 2,
+                          transition: "all 0.3s ease",
+                          animation: `slideInRight 0.5s ease-out ${feature.delay}s backwards`,
+                          "@keyframes slideInRight": {
+                            "0%": {
+                              opacity: 0,
+                              transform: "translateX(-30px)",
+                            },
+                            "100%": {
+                              opacity: 1,
+                              transform: "translateX(0)",
+                            },
+                          },
+                          "&:hover": {
+                            transform: "translateX(10px)",
+                            bgcolor: "rgba(255,255,255,0.2)",
+                          },
+                        }}
+                      >
+                        <feature.icon sx={{ fontSize: 28 }} />
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {feature.text}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+              
+                  {/* Animated Pulse Effect */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 20,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 100,
+                      height: 100,
+                      borderRadius: "50%",
+                      background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
+                      animation: "pulse 2s ease-in-out infinite",
+                      "@keyframes pulse": {
+                        "0%": {
+                          transform: "translateX(-50%) scale(0.8)",
+                          opacity: 0.5,
+                        },
+                        "50%": {
+                          transform: "translateX(-50%) scale(1.2)",
+                          opacity: 0.2,
+                        },
+                        "100%": {
+                          transform: "translateX(-50%) scale(0.8)",
+                          opacity: 0.5,
+                        },
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </Paper>
-        </Container>
-      </Box>
 
       {/* Password Reset Dialog */}
       <Dialog
