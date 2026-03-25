@@ -139,30 +139,24 @@ const Login = () => {
               <Box sx={{ flex: 1, p: { xs: 3, lg: 6 } }}>
                 {/* Logo */}
                 <Box sx={{ mb: 4 }}>
-                  <Avatar
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      bgcolor: "white",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  <img
+                    src="/logo.png"
+                    alt={`${APP_NAME} Logo`}
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "contain",
                     }}
-                  >
-                    <img
-                      src="/logo.png"
-                      alt={`${APP_NAME} Logo`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.style.display = "none";
-                        e.target.parentElement.innerHTML =
-                          '<Business sx={{ fontSize: 40, color: "#007AFF" }} />';
-                      }}
-                    />
-                  </Avatar>
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.style.display = "none";
+                      // Show Business icon as fallback
+                      const parent = e.target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12V18L12 22L19 18V12" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                      }
+                    }}
+                  />
                 </Box>
 
                 {/* Welcome Text */}
