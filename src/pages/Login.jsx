@@ -8,7 +8,6 @@ import {
   Box,
   Alert,
   CircularProgress,
-  Avatar,
   CssBaseline,
   Dialog,
   DialogTitle,
@@ -17,19 +16,21 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { signIn, resetPassword } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { APP_NAME, SUPPORT_EMAIL } from "../utils/constants";
 import {
   Business,
-  Login as LoginIcon,
   Close,
   Email,
   Visibility,
   VisibilityOff,
   ArrowForward,
   Lock,
+  TrendingUp,
+  Assignment,
+  Analytics,
 } from "@mui/icons-material";
 
 const Login = () => {
@@ -150,7 +151,6 @@ const Login = () => {
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.style.display = "none";
-                      // Show Business icon as fallback
                       const parent = e.target.parentElement;
                       if (parent) {
                         parent.innerHTML = '<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12V18L12 22L19 18V12" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -423,7 +423,7 @@ const Login = () => {
                 </Box>
               </Box>
 
-              {/* Right Side - Illustration (Hidden on mobile) */}
+              {/* Right Side - Animated Illustration */}
               <Box
                 sx={{
                   display: { xs: "none", lg: "flex" },
@@ -583,6 +583,10 @@ const Login = () => {
                   />
                 </Box>
               </Box>
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
 
       {/* Password Reset Dialog */}
       <Dialog
@@ -617,14 +621,12 @@ const Login = () => {
         <DialogContent>
           {resetSuccess ? (
             <Alert severity="success" sx={{ my: 2, borderRadius: 2 }}>
-              Password reset email sent! Please check your inbox and follow the
-              instructions.
+              Password reset email sent! Please check your inbox and follow the instructions.
             </Alert>
           ) : (
             <>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Enter your email address and we'll send you a link to reset your
-                password.
+                Enter your email address and we'll send you a link to reset your password.
               </Typography>
 
               {resetError && (
@@ -663,9 +665,7 @@ const Login = () => {
                 onClick={handleResetPassword}
                 variant="contained"
                 disabled={resetLoading}
-                startIcon={
-                  resetLoading ? <CircularProgress size={20} /> : <Email />
-                }
+                startIcon={resetLoading ? <CircularProgress size={20} /> : <Email />}
                 sx={{
                   borderRadius: 2,
                   textTransform: "none",
@@ -677,12 +677,7 @@ const Login = () => {
           )}
 
           {resetSuccess && (
-            <Button
-              onClick={handleResetDialogClose}
-              variant="contained"
-              fullWidth
-              sx={{ borderRadius: 2 }}
-            >
+            <Button onClick={handleResetDialogClose} variant="contained" fullWidth sx={{ borderRadius: 2 }}>
               Close
             </Button>
           )}
