@@ -176,7 +176,7 @@ const Login = () => {
                     mb: 1,
                   }}
                 >
-                  Welcome Back
+                  Sales Synapse Pro
                 </Typography>
                 <Typography
                   variant="body1"
@@ -186,7 +186,7 @@ const Login = () => {
                     mb: 4,
                   }}
                 >
-                  Sign in to continue to {APP_NAME}
+                  AI-Powered Sales Intelligence Platform
                 </Typography>
 
                 {/* Error Alert */}
